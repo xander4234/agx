@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AGX SOLUCIONES — Salud (MVP)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div class="brand-title">AGX Salud</div>
+          <div class="brand-sub">Agenda • Chat • Historia</div>
+        </div>
+      </div>
+
+      <nav class="menu" id="menu">
+        <button data-view="dashboard" class="menu-item is-active">Dashboard</button>
+        <button data-view="appointments" class="menu-item">Citas</button>
+        <button data-view="patients" class="menu-item">Pacientes</button>
+        <button data-view="queue" class="menu-item">Atención inmediata</button>
+        <button data-view="chat" class="menu-item">Chat</button>
+        <button data-view="ai" class="menu-item">IA (triage)</button>
+        <button data-view="settings" class="menu-item">Cuenta</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="muted">Demo MVP — UI premium salud</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="h1" id="title">Dashboard</div>
+          <div class="muted" id="subtitle">Resumen de actividad</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn btn-outline" id="btnLogout">Salir</button>
+          <a class="btn btn-primary" href="https://wa.me/59398476706" target="_blank" rel="noreferrer">WhatsApp</a>
+        </div>
+      </header>
+
+      <section class="content">
+        <!-- Login -->
+        <div class="card" id="loginCard">
+          <div class="card-title">Iniciar sesión</div>
+          <div class="card-sub">Usa el usuario demo: <b>admin@agx.local</b> / <b>Admin123!</b></div>
+
+          <form id="loginForm" class="form">
+            <div class="grid2">
+              <div>
+                <label>Email</label>
+                <input name="email" type="email" placeholder="admin@agx.local" required />
+              </div>
+              <div>
+                <label>Password</label>
+                <input name="password" type="password" placeholder="Admin123!" required />
+              </div>
+            </div>
+            <button class="btn btn-primary" type="submit">Entrar</button>
+            <div class="muted" id="loginMsg"></div>
+          </form>
+        </div>
+
+        <!-- App views -->
+        <div id="views" class="hidden">
+          <div id="view-dashboard" class="view">
+            <div class="grid3">
+              <div class="stat">
+                <div class="stat-label">Citas (últimas 200)</div>
+                <div class="stat-value" id="statAppointments">—</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Pacientes</div>
+                <div class="stat-value" id="statPatients">—</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">En cola (inmediata)</div>
+                <div class="stat-value" id="statQueue">—</div>
+              </div>
+            </div>
+
+            <div class="split">
+              <div class="card">
+                <div class="card-title">Próximas citas</div>
+                <div class="card-sub">Ordenadas por fecha</div>
+                <div class="table" id="dashAppointments"></div>
+              </div>
+              <div class="card">
+                <div class="card-title">Acciones rápidas</div>
+                <div class="card-sub">Flujos principales</div>
+
+                <div class="actions">
+                  <button class="btn btn-primary" id="quickNewPatient">Nuevo paciente</button>
+                  <button class="btn btn-outline" id="quickNewAppt">Nueva cita</button>
+                  <button class="btn btn-outline" id="quickWalkIn">Atención inmediata</button>
+                </div>
+
+                <div class="hint">
+                  *Video consulta:* cada cita virtual tiene un botón para abrir sala Jitsi.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-appointments" class="view hidden">
+            <div class="split">
+              <div class="card">
+                <div class="card-title">Citas</div>
+                <div class="card-sub">Crear, confirmar y cambiar estados</div>
+                <div class="table" id="appointmentsTable"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Nueva cita</div>
+                <div class="card-sub">Selecciona paciente y fecha</div>
+                <form class="form" id="apptForm">
+                  <label>Paciente</label>
+                  <select id="apptPatient" required></select>
+
+                  <div class="grid2">
+                    <div>
+                      <label>Tipo</label>
+                      <select id="apptType">
+                        <option value="in_person">Presencial</option>
+                        <option value="virtual">Virtual</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label>Motivo</label>
+                      <input id="apptReason" placeholder="Ej: Control / Dolor / Odontología" />
+                    </div>
+                  </div>
+
+                  <div class="grid2">
+                    <div>
+                      <label>Inicio</label>
+                      <input id="apptStart" type="datetime-local" required />
+                    </div>
+                    <div>
+                      <label>Fin</label>
+                      <input id="apptEnd" type="datetime-local" required />
+                    </div>
+                  </div>
+
+                  <button class="btn btn-primary" type="submit">Crear cita</button>
+                  <div class="muted" id="apptMsg"></div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-patients" class="view hidden">
+            <div class="split">
+              <div class="card">
+                <div class="card-title">Pacientes</div>
+                <div class="card-sub">Listado</div>
+                <div class="table" id="patientsTable"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Nuevo paciente</div>
+                <div class="card-sub">Datos básicos + antecedentes</div>
+
+                <form class="form" id="patientForm">
+                  <div class="grid2">
+                    <div>
+                      <label>Nombres</label>
+                      <input id="pFirst" required placeholder="Juan" />
+                    </div>
+                    <div>
+                      <label>Apellidos</label>
+                      <input id="pLast" required placeholder="Pérez" />
+                    </div>
+                  </div>
+
+                  <div class="grid2">
+                    <div>
+                      <label>Teléfono</label>
+                      <input id="pPhone" placeholder="+593..." />
+                    </div>
+                    <div>
+                      <label>Email</label>
+                      <input id="pEmail" type="email" placeholder="correo@..." />
+                    </div>
+                  </div>
+
+                  <label>Alergias</label>
+                  <input id="pAllergies" placeholder="Ej: Penicilina" />
+
+                  <label>Condiciones</label>
+                  <input id="pConditions" placeholder="Ej: Hipertensión" />
+
+                  <label>Notas</label>
+                  <textarea id="pNotes" placeholder="Observaciones"></textarea>
+
+                  <button class="btn btn-primary" type="submit">Guardar paciente</button>
+                  <div class="muted" id="patientMsg"></div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-queue" class="view hidden">
+            <div class="split">
+              <div class="card">
+                <div class="card-title">Cola de atención inmediata</div>
+                <div class="card-sub">waiting / in_progress</div>
+                <div class="table" id="queueTable"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Crear turno inmediato</div>
+                <div class="card-sub">Walk-in / Emergente</div>
+                <form class="form" id="walkinForm">
+                  <label>Paciente</label>
+                  <select id="walkinPatient" required></select>
+                  <label>Motivo</label>
+                  <input id="walkinReason" placeholder="Ej: dolor intenso / control urgente" />
+                  <label>Tipo</label>
+                  <select id="walkinType">
+                    <option value="in_person">Presencial</option>
+                    <option value="virtual">Virtual</option>
+                  </select>
+                  <button class="btn btn-primary" type="submit">Agregar a cola</button>
+                  <div class="muted" id="walkinMsg"></div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-chat" class="view hidden">
+            <div class="split">
+              <div class="card">
+                <div class="card-title">Selecciona cita</div>
+                <div class="card-sub">El chat se crea por cita</div>
+                <div class="table" id="chatApptTable"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Chat</div>
+                <div class="card-sub" id="chatSub">Sin hilo</div>
+
+                <div class="chat">
+                  <div class="chat-log" id="chatLog"></div>
+                  <form class="chat-form" id="chatForm">
+                    <input id="chatInput" placeholder="Escribe un mensaje…" />
+                    <button class="btn btn-primary" type="submit">Enviar</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-ai" class="view hidden">
+            <div class="card">
+              <div class="card-title">IA — Triage (solo sugerencias)</div>
+              <div class="card-sub">No reemplaza diagnóstico. Útil para clasificar y preguntar.</div>
+
+              <form class="form" id="aiForm">
+                <label>Mensaje del paciente</label>
+                <textarea id="aiMessage" placeholder="Describe el problema, tiempo y síntomas…"></textarea>
+                <button class="btn btn-primary" type="submit">Analizar</button>
+                <div class="muted" id="aiMsg"></div>
+              </form>
+
+              <div class="answer" id="aiAnswer"></div>
+            </div>
+          </div>
+
+          <div id="view-settings" class="view hidden">
+            <div class="card">
+              <div class="card-title">Cuenta</div>
+              <div class="card-sub">Sesión</div>
+              <div class="kvs">
+                <div><span class="muted">Usuario:</span> <b id="meName">—</b></div>
+                <div><span class="muted">Rol:</span> <b id="meRole">—</b></div>
+              </div>
+              <button class="btn btn-outline" id="btnLogout2">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

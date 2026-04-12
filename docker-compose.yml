@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    container_name: agx_health_db
+    environment:
+      POSTGRES_USER: agx
+      POSTGRES_PASSWORD: agxpass
+      POSTGRES_DB: agx_health
+    ports:
+      - "5435:5432"
+    volumes:
+      - agx_health_pgdata:/var/lib/postgresql/data
+volumes:
+  agx_health_pgdata:
