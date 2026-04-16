@@ -6,10 +6,11 @@ on:
 
 jobs:
   build-and-push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -25,24 +26,20 @@ jobs:
 
       - name: Build frontend
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/frontend:latest ./web
+          docker build -t ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ./web
 
       - name: Push frontend
         run: |
-          docker push ghcr.io/${{ github.repository }}/frontend:latest
+          docker push ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
+      - name: Update deployment.yaml
+        run: |
+          sed -i "s|image: ghcr.io/.*/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" k8s/web/deployment.yaml
 
-    steps:
-      - name: Deploy en K8s por SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          script: |
-            cd AGX
-            git pull
-            kubectl apply -f k8s/frontend.yaml
+      - name: Commit cambios
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add k8s/web/deployment.yaml
+          git commit -m "Update image to ${{ github.sha }}" || echo "No changes"
+          git push
