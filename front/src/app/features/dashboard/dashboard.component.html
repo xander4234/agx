@@ -1,0 +1,51 @@
+<section class="dashboard-shell">
+  <header class="topbar">
+    <div>
+      <span class="topbar-badge">AGX Salud</span>
+      <h1>Bienvenido, {{ user()?.displayName }}</h1>
+      <p>Has ingresado con el rol: <strong>{{ roleLabel() }}</strong></p>
+    </div>
+
+    <button class="logout-btn" type="button" (click)="logout()">
+      Cerrar sesión
+    </button>
+  </header>
+
+  <div class="dashboard-grid">
+    <article class="card card-main">
+      <span class="card-tag">Resumen</span>
+      <h2>Tu nueva base Angular ya está lista</h2>
+      <p>
+        Esta vista demuestra que el login navega correctamente y que el rol
+        seleccionado puede usarse para personalizar la experiencia.
+      </p>
+    </article>
+
+    <article class="card">
+      <span class="card-tag">Paciente</span>
+      <h3>Opciones sugeridas</h3>
+      <ul *ngIf="user()?.role === 'paciente'; else medicoBlock">
+        <li>Ver próximas citas</li>
+        <li>Consultar resultados</li>
+        <li>Chatear con el médico</li>
+      </ul>
+
+      <ng-template #medicoBlock>
+        <ul>
+          <li>Revisar agenda del día</li>
+          <li>Ver pacientes pendientes</li>
+          <li>Acceder a historias clínicas</li>
+        </ul>
+      </ng-template>
+    </article>
+
+    <article class="card">
+      <span class="card-tag">Siguiente paso</span>
+      <h3>Integración</h3>
+      <p>
+        Desde aquí puedes conectar tu API, autenticación real, token JWT,
+        menú lateral y los módulos que ya tienes en tu sistema.
+      </p>
+    </article>
+  </div>
+</section>

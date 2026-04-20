@@ -1,0 +1,147 @@
+<section class="login-shell">
+  <div class="login-layout">
+    <div class="hero-panel">
+      <div class="hero-overlay"></div>
+      <div class="hero-glow hero-glow-top"></div>
+      <div class="hero-glow hero-glow-bottom"></div>
+
+      <div class="hero-content">
+        <span class="hero-badge">AGX SALUD · PORTAL CLÍNICO DIGITAL</span>
+
+        <h1>Cuidado médico confiable, ágil y siempre disponible.</h1>
+
+        <p>
+          Un acceso moderno para pacientes y médicos, con una imagen principal
+          más protagonista y una experiencia visual más elegante.
+        </p>
+
+        <div class="hero-cards">
+          <div class="mini-card">
+            <strong>Agenda</strong>
+            <span>Citas y seguimiento</span>
+          </div>
+          <div class="mini-card">
+            <strong>Historial</strong>
+            <span>Información clínica centralizada</span>
+          </div>
+          <div class="mini-card">
+            <strong>Atención</strong>
+            <span>Portal disponible para paciente y médico</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-panel">
+      <div class="login-card">
+        <div class="card-accent"></div>
+
+        <div class="brand-row">
+          <div class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="44" height="44" rx="16" fill="url(#grad)" />
+              <path d="M32 20V44" stroke="white" stroke-width="5" stroke-linecap="round" />
+              <path d="M20 32H44" stroke="white" stroke-width="5" stroke-linecap="round" />
+              <path d="M17 45C22 39 25 39 28 45C31 51 34 51 37 45C39 41 41 39 47 39" stroke="#CFFAFE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <defs>
+                <linearGradient id="grad" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#0F766E" />
+                  <stop offset="1" stop-color="#14B8A6" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <div>
+            <div class="brand-title">AGX Salud</div>
+            <div class="brand-subtitle">Portal médico seguro</div>
+          </div>
+        </div>
+
+        <div class="heading">
+          <span class="eyebrow">Acceso principal</span>
+          <h2>Iniciar sesión</h2>
+          <p>{{ titleByRole() }}</p>
+        </div>
+
+        <div class="role-switcher">
+          <button
+            type="button"
+            class="role-option"
+            [ngClass]="{ active: selectedRole() === 'paciente' }"
+            (click)="selectRole('paciente')">
+            <span class="role-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M5 20C6.5 16.8 8.8 15.5 12 15.5C15.2 15.5 17.5 16.8 19 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span>
+              <strong>Paciente</strong>
+              <small>Agenda, resultados y seguimiento</small>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="role-option"
+            [ngClass]="{ active: selectedRole() === 'medico' }"
+            (click)="selectRole('medico')">
+            <span class="role-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.5 5V12.2C9.5 14.74 7.44 16.8 4.9 16.8C4.4 16.8 4 17.2 4 17.7V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M14.5 5V10.5C14.5 12.99 16.51 15 19 15H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M9.5 7.5H14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="16.5" cy="18" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </span>
+            <span>
+              <strong>Médico</strong>
+              <small>Consultas, agenda e historial</small>
+            </span>
+          </button>
+        </div>
+
+        <form class="login-form" [formGroup]="loginForm" (ngSubmit)="submit()">
+          <label>
+            <span>Correo electrónico</span>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="usuario@agxsalud.com" />
+          </label>
+
+          <label>
+            <span>Contraseña</span>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="••••••••" />
+          </label>
+
+          <div class="row-inline">
+            <label class="remember-option">
+              <input type="checkbox" formControlName="remember" />
+              <span>Recordar sesión</span>
+            </label>
+
+            <a href="#">Olvidé mi contraseña</a>
+          </div>
+
+          <button class="submit-btn" type="submit" [disabled]="loading()">
+            {{ loading() ? 'Ingresando...' : 'Ingresar al portal' }}
+          </button>
+
+          <div class="feedback">
+            {{ infoMessage() }}
+          </div>
+        </form>
+
+        <div class="login-footer">
+          <span>¿No tienes acceso?</span>
+          <a href="#">Solicitar registro</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
