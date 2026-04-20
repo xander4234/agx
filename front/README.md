@@ -1,57 +1,27 @@
-# AGX Salud — Base Angular con login premium
+# AgxSaludLogin
 
-Esta propuesta convierte tu `index` original a una estructura Angular separando:
-- pantalla de login
-- dashboard inicial
-- servicio de autenticación
-- rutas
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
 
-## Estructura
-```bash
-src/
-  app/
-    app.component.ts
-    app.config.ts
-    app.routes.ts
-    core/
-      services/
-        auth.service.ts
-    features/
-      auth/
-        login/
-          login.component.ts
-          login.component.html
-          login.component.css
-      dashboard/
-        dashboard.component.ts
-        dashboard.component.html
-        dashboard.component.css
-  index.html
-  main.ts
-  styles.css
-```
+## Development server
 
-## Cómo usarlo
-1. Crea un proyecto Angular standalone:
-   ```bash
-   ng new agx-salud --standalone --style css
-   ```
-2. Reemplaza la carpeta `src` con los archivos de esta propuesta.
-3. Ejecuta:
-   ```bash
-   npm install
-   ng serve
-   ```
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-## Qué incluye
-- Imagen principal grande de una doctora al lado izquierdo.
-- Caja de login al costado derecho.
-- Selector visual de rol: **Paciente** o **Médico**.
-- Diseño moderno, limpio, didáctico y responsivo.
-- Navegación simple a un dashboard demo después del login.
+## Code scaffolding
 
-## Nota sobre la imagen
-La imagen está definida desde CSS con una URL externa para que puedas verla enseguida.
-Si prefieres usar una foto local, reemplaza la propiedad `background-image` en:
+Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-`src/app/features/auth/login/login.component.css`
+## Build
+
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+
+## Running unit tests
+
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+
+## Running end-to-end tests
+
+Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+
+## Further help
+
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
