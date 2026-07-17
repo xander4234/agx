@@ -1,0 +1,149 @@
+<<section class="dashboard-shell">
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <div class="dashboard-container">
+    <div class="dashboard-topbar">
+      <div class="topbar-left">
+        <span class="badge-brand">AGX Salud</span>
+        <h1>Dashboard Médico</h1>
+        <p class="subtitle">
+          Bienvenido, {{ doctorName }} · {{ specialty }} · {{ todayDate }}
+        </p>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="btn-logout" (click)="logout()">Salir</button>
+        <button class="btn-outline" (click)="go('/medico/citas')">Ver agenda</button>
+        <button class="btn-primary" (click)="go('/medico/historia-clinica')">Nueva atención</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let item of stats">
+        <div class="stat-head">
+          <span class="stat-icon">{{ item.icon }}</span>
+          <span class="stat-change">{{ item.change }}</span>
+        </div>
+        <div class="stat-title">{{ item.title }}</div>
+        <div class="stat-value">{{ item.value }}</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="left-column">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>Agenda de hoy</h3>
+              <p>Consultas programadas para el día</p>
+            </div>
+            <button class="text-link" (click)="go('/medico/citas')">Ver todas</button>
+          </div>
+
+          <div class="appointment-list">
+            <div class="appointment-item" *ngFor="let appointment of todayAppointments">
+              <div class="appointment-time">{{ appointment.time }}</div>
+
+              <div class="appointment-info">
+                <strong>{{ appointment.patient }}</strong>
+                <span>{{ appointment.reason }}</span>
+              </div>
+
+              <div class="appointment-status" [ngClass]="getStatusClass(appointment.status)">
+                {{ appointment.status }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>Pacientes recientes</h3>
+              <p>Últimas atenciones registradas</p>
+            </div>
+            <button class="text-link" (click)="go('/medico/pacientes')">Gestionar pacientes</button>
+          </div>
+
+          <div class="patient-table">
+            <div class="patient-row patient-header-row">
+              <span>Paciente</span>
+              <span>Edad</span>
+              <span>Última visita</span>
+              <span>Diagnóstico</span>
+            </div>
+
+            <div class="patient-row" *ngFor="let patient of recentPatients">
+              <span>{{ patient.name }}</span>
+              <span>{{ patient.age }}</span>
+              <span>{{ patient.lastVisit }}</span>
+              <span>{{ patient.diagnosis }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-column">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>Acciones rápidas</h3>
+              <p>Atajos operativos del sistema</p>
+            </div>
+          </div>
+
+          <div class="quick-actions-grid">
+            <button
+              type="button"
+              class="quick-action-card"
+              *ngFor="let action of quickActions"
+              (click)="go(action.route)"
+            >
+              <div class="quick-icon">{{ action.icon }}</div>
+              <div class="quick-content">
+                <strong>{{ action.title }}</strong>
+                <span>{{ action.subtitle }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>Tareas pendientes</h3>
+              <p>Actividades por completar</p>
+            </div>
+          </div>
+
+          <ul class="task-list">
+            <li *ngFor="let task of pendingTasks">{{ task }}</li>
+          </ul>
+        </div>
+
+        <div class="panel-card availability-card">
+          <div class="panel-header">
+            <div>
+              <h3>Disponibilidad</h3>
+              <p>Estado actual del médico</p>
+            </div>
+          </div>
+
+          <div class="availability-status">
+            <div class="status-dot"></div>
+            <div>
+              <strong>Disponible</strong>
+              <span>Horario activo: 08:00 AM - 05:00 PM</span>
+            </div>
+          </div>
+
+          <button class="btn-primary full-width" (click)="go('/medico/disponibilidad')">
+            Gestionar disponibilidad
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

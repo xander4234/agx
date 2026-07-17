@@ -1,0 +1,80 @@
+<div class="med-layout">
+  <aside class="sidebar">
+    <div class="brand-block">
+      <div class="brand-icon">
+        <span>+</span>
+      </div>
+
+      <div>
+        <h1>AGX Salud</h1>
+        <p>Panel médico</p>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <a
+        routerLink="/medico/dashboard"
+        routerLinkActive="active"
+        class="menu-item"
+      >
+        <span class="menu-label">Dashboard</span>
+      </a>
+
+      <button type="button" class="menu-item muted">
+        <span class="menu-label">Pacientes</span>
+        <small>Próximo</small>
+      </button>
+
+      <button type="button" class="menu-item muted">
+        <span class="menu-label">Agenda</span>
+        <small>Próximo</small>
+      </button>
+
+      <button type="button" class="menu-item muted">
+        <span class="menu-label">Citas</span>
+        <small>Próximo</small>
+      </button>
+
+      <button type="button" class="menu-item muted">
+        <span class="menu-label">Historia clínica</span>
+        <small>Próximo</small>
+      </button>
+
+      <button type="button" class="menu-item muted">
+        <span class="menu-label">Recetas médicas</span>
+        <small>Próximo</small>
+      </button>
+
+      <button type="button" class="menu-item muted">
+        <span class="menu-label">Reportes</span>
+        <small>Próximo</small>
+      </button>
+    </nav>
+
+    <div class="doctor-card">
+      <div class="doctor-avatar">DR</div>
+      <div>
+        <strong>DR. ANGEL ALCIVAR </strong>
+        <span>Consultorio general</span>
+      </div>
+    </div>
+  </aside>
+
+  <section class="workspace">
+    <header class="topbar">
+      <div>
+        <h2>Consultorio médico</h2>
+        <p>Gestión clínica, agenda y atención de pacientes</p>
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="secondary-btn">Disponibilidad</button>
+        <button type="button" class="primary-btn">Nueva atención</button>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </section>
+</div>

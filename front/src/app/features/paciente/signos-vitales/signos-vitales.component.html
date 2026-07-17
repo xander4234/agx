@@ -1,0 +1,152 @@
+<section class="vital-shell">
+  <div class="vital-topbar">
+    <div>
+      <span class="badge-brand">Portal del paciente</span>
+      <h1>Registrar signos vitales</h1>
+      <p class="subtitle">Guarda tus controles y lleva seguimiento de tu estado de salud.</p>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn-logout" (click)="logout()">Salir</button>
+      <button class="btn-outline" (click)="goDashboard()">Volver al panel</button>
+    </div>
+  </div>
+
+  <div class="vital-grid">
+    <div class="panel-card">
+      <div class="panel-header">
+        <div>
+          <h3>Nuevo registro</h3>
+          <p>Completa los datos del control actual.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" [(ngModel)]="fecha" />
+        </div>
+
+        <div class="form-group">
+          <label>Hora</label>
+          <input type="time" [(ngModel)]="hora" />
+        </div>
+
+        <div class="form-group">
+          <label>Presión arterial</label>
+          <input type="text" [(ngModel)]="presion" placeholder="Ej. 118/78 mmHg" />
+        </div>
+
+        <div class="form-group">
+          <label>Frecuencia cardiaca</label>
+          <input type="text" [(ngModel)]="frecuencia" placeholder="Ej. 72 lpm" />
+        </div>
+
+        <div class="form-group">
+          <label>Temperatura</label>
+          <input type="text" [(ngModel)]="temperatura" placeholder="Ej. 36.5 °C" />
+        </div>
+
+        <div class="form-group">
+          <label>Saturación</label>
+          <input type="text" [(ngModel)]="saturacion" placeholder="Ej. 98%" />
+        </div>
+
+        <div class="form-group">
+          <label>Peso</label>
+          <input type="text" [(ngModel)]="peso" placeholder="Ej. 68 kg" />
+        </div>
+
+        <div class="form-group">
+          <label>Glucosa</label>
+          <input type="text" [(ngModel)]="glucosa" placeholder="Ej. 92 mg/dL" />
+        </div>
+
+        <div class="form-group full">
+          <label>Observaciones</label>
+          <textarea [(ngModel)]="observaciones" rows="4" placeholder="Comentarios adicionales"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" (click)="guardarRegistro()">Guardar registro</button>
+        <button class="btn-outline" (click)="limpiarFormulario()">Limpiar</button>
+      </div>
+
+      <div class="message-ok" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+    </div>
+
+    <div class="side-column">
+      <div class="panel-card" *ngIf="ultimoRegistro">
+        <div class="panel-header">
+          <div>
+            <h3>Último control</h3>
+            <p>{{ ultimoRegistro.fecha }} · {{ ultimoRegistro.hora }}</p>
+          </div>
+        </div>
+
+        <div class="latest-grid">
+          <div class="latest-item">
+            <span>Presión arterial</span>
+            <strong>{{ ultimoRegistro.presion }}</strong>
+          </div>
+          <div class="latest-item">
+            <span>Frecuencia cardiaca</span>
+            <strong>{{ ultimoRegistro.frecuencia }}</strong>
+          </div>
+          <div class="latest-item">
+            <span>Temperatura</span>
+            <strong>{{ ultimoRegistro.temperatura }}</strong>
+          </div>
+          <div class="latest-item">
+            <span>Saturación</span>
+            <strong>{{ ultimoRegistro.saturacion }}</strong>
+          </div>
+          <div class="latest-item">
+            <span>Peso</span>
+            <strong>{{ ultimoRegistro.peso }}</strong>
+          </div>
+          <div class="latest-item">
+            <span>Glucosa</span>
+            <strong>{{ ultimoRegistro.glucosa }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h3>Historial de registros</h3>
+            <p>Controles guardados en el sistema.</p>
+          </div>
+        </div>
+
+        <div class="record-list">
+          <div class="record-item" *ngFor="let item of registros; let i = index">
+            <div class="record-top">
+              <div>
+                <strong>{{ item.fecha }} · {{ item.hora }}</strong>
+                <span>{{ item.presion }} · {{ item.frecuencia }}</span>
+              </div>
+              <button class="btn-delete" (click)="eliminarRegistro(i)">Eliminar</button>
+            </div>
+
+            <div class="record-grid">
+              <div><label>Temperatura</label><p>{{ item.temperatura }}</p></div>
+              <div><label>Saturación</label><p>{{ item.saturacion }}</p></div>
+              <div><label>Peso</label><p>{{ item.peso }}</p></div>
+              <div><label>Glucosa</label><p>{{ item.glucosa }}</p></div>
+            </div>
+
+            <div class="record-notes" *ngIf="item.observaciones">
+              <label>Observaciones</label>
+              <p>{{ item.observaciones }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

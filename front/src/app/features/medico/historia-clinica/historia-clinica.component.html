@@ -1,0 +1,210 @@
+<section class="history-shell">
+  <div class="history-topbar">
+    <div>
+      <span class="badge-brand">AGX Salud</span>
+      <h1>Historia clínica</h1>
+      <p class="subtitle">
+        {{ doctorName }} · {{ specialty }} · {{ currentDate }}
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn-logout" (click)="logout()">Salir</button>
+      <button class="btn-outline" (click)="goDashboard()">Volver al dashboard</button>
+    </div>
+  </div>
+
+  <div class="history-grid">
+    <div class="left-column">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h3>Datos del paciente</h3>
+            <p>Información general para la atención médica.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Paciente</label>
+            <input type="text" [(ngModel)]="paciente" placeholder="Nombre completo del paciente" />
+          </div>
+
+          <div class="form-group">
+            <label>Cédula</label>
+            <input type="text" [(ngModel)]="cedula" placeholder="Número de cédula" />
+          </div>
+
+          <div class="form-group">
+            <label>Edad</label>
+            <input type="text" [(ngModel)]="edad" placeholder="Edad" />
+          </div>
+
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" [(ngModel)]="telefono" placeholder="Número de contacto" />
+          </div>
+
+          <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" [(ngModel)]="direccion" placeholder="Dirección del paciente" />
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h3>Evaluación clínica</h3>
+            <p>Antecedentes, motivo de consulta y examen físico.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Motivo de consulta</label>
+            <textarea [(ngModel)]="motivoConsulta" rows="3" placeholder="Detalle el motivo de consulta"></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label>Antecedentes</label>
+            <textarea [(ngModel)]="antecedentes" rows="3" placeholder="Antecedentes personales o familiares relevantes"></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label>Alergias</label>
+            <textarea [(ngModel)]="alergias" rows="2" placeholder="Alergias conocidas"></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label>Examen físico</label>
+            <textarea [(ngModel)]="examenFisico" rows="4" placeholder="Hallazgos del examen físico"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h3>Signos vitales</h3>
+            <p>Registro rápido de constantes del paciente.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Presión arterial</label>
+            <input type="text" [(ngModel)]="presionArterial" placeholder="Ej. 120/80 mmHg" />
+          </div>
+
+          <div class="form-group">
+            <label>Frecuencia cardiaca</label>
+            <input type="text" [(ngModel)]="frecuenciaCardiaca" placeholder="Ej. 72 lpm" />
+          </div>
+
+          <div class="form-group">
+            <label>Temperatura</label>
+            <input type="text" [(ngModel)]="temperatura" placeholder="Ej. 36.5 °C" />
+          </div>
+
+          <div class="form-group">
+            <label>Saturación</label>
+            <input type="text" [(ngModel)]="saturacion" placeholder="Ej. 98%" />
+          </div>
+
+          <div class="form-group">
+            <label>Peso</label>
+            <input type="text" [(ngModel)]="peso" placeholder="Ej. 68 kg" />
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h3>Diagnóstico y tratamiento</h3>
+            <p>Registro clínico final de la atención.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Diagnóstico</label>
+            <textarea [(ngModel)]="diagnostico" rows="3" placeholder="Diagnóstico médico"></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label>Tratamiento</label>
+            <textarea [(ngModel)]="tratamiento" rows="3" placeholder="Tratamiento prescrito"></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label>Recomendaciones</label>
+            <textarea [(ngModel)]="recomendaciones" rows="3" placeholder="Indicaciones y recomendaciones"></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label>Evolución</label>
+            <textarea [(ngModel)]="evolucion" rows="3" placeholder="Observaciones sobre evolución del paciente"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-primary" (click)="guardarHistoria()">Guardar historia</button>
+          <button class="btn-outline" (click)="limpiarFormulario()">Limpiar</button>
+        </div>
+
+        <div class="message-ok" *ngIf="mensaje">
+          {{ mensaje }}
+        </div>
+      </div>
+    </div>
+
+    <div class="right-column">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h3>Historias registradas</h3>
+            <p>Consultas almacenadas en el módulo.</p>
+          </div>
+        </div>
+
+        <div class="history-list">
+          <div class="history-item" *ngFor="let item of historias; let i = index">
+            <div class="history-item-top">
+              <div>
+                <strong>{{ item.paciente }}</strong>
+                <span>{{ item.fecha }} · CI: {{ item.cedula }}</span>
+              </div>
+
+              <button class="btn-delete" (click)="eliminarHistoria(i)">Eliminar</button>
+            </div>
+
+            <div class="history-section">
+              <label>Motivo</label>
+              <p>{{ item.motivo }}</p>
+            </div>
+
+            <div class="history-section">
+              <label>Diagnóstico</label>
+              <p>{{ item.diagnostico }}</p>
+            </div>
+
+            <div class="history-section">
+              <label>Tratamiento</label>
+              <p>{{ item.tratamiento }}</p>
+            </div>
+
+            <div class="mini-signs">
+              <span>PA: {{ item.signos.presion || '—' }}</span>
+              <span>FC: {{ item.signos.frecuencia || '—' }}</span>
+              <span>T: {{ item.signos.temperatura || '—' }}</span>
+              <span>Sat: {{ item.signos.saturacion || '—' }}</span>
+              <span>Peso: {{ item.signos.peso || '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

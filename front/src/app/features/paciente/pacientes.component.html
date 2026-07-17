@@ -1,0 +1,136 @@
+<section class="patients-shell">
+  <div class="patients-topbar">
+    <div>
+      <span class="badge-brand">AGX Salud</span>
+      <h1>Pacientes</h1>
+      <p class="subtitle">
+        {{ doctorName }} · {{ specialty }} · {{ currentDate }}
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn-logout" (click)="logout()">Salir</button>
+      <button class="btn-outline" (click)="goDashboard()">Volver al dashboard</button>
+    </div>
+  </div>
+
+  <div class="patients-grid">
+    <div class="panel-card">
+      <div class="panel-header">
+        <div>
+          <h3>Registrar paciente</h3>
+          <p>Ingresa la información principal del paciente.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre completo</label>
+          <input type="text" [(ngModel)]="nombre" placeholder="Nombre del paciente" />
+        </div>
+
+        <div class="form-group">
+          <label>Cédula</label>
+          <input type="text" [(ngModel)]="cedula" placeholder="Número de cédula" />
+        </div>
+
+        <div class="form-group">
+          <label>Edad</label>
+          <input type="text" [(ngModel)]="edad" placeholder="Edad" />
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="telefono" placeholder="Número de contacto" />
+        </div>
+
+        <div class="form-group">
+          <label>Dirección</label>
+          <input type="text" [(ngModel)]="direccion" placeholder="Dirección" />
+        </div>
+
+        <div class="form-group">
+          <label>Género</label>
+          <select [(ngModel)]="genero">
+            <option>Masculino</option>
+            <option>Femenino</option>
+            <option>Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo de sangre</label>
+          <select [(ngModel)]="tipoSangre">
+            <option>O+</option>
+            <option>O-</option>
+            <option>A+</option>
+            <option>A-</option>
+            <option>B+</option>
+            <option>B-</option>
+            <option>AB+</option>
+            <option>AB-</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>Alergias</label>
+          <textarea [(ngModel)]="alergias" rows="3" placeholder="Alergias conocidas"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" (click)="guardarPaciente()">Guardar paciente</button>
+        <button class="btn-outline" (click)="limpiarFormulario()">Limpiar</button>
+      </div>
+
+      <div class="message-ok" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-header">
+        <div>
+          <h3>Listado de pacientes</h3>
+          <p>Consulta, filtra y elimina pacientes registrados.</p>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <input
+          type="text"
+          [(ngModel)]="buscar"
+          placeholder="Buscar por nombre, cédula o teléfono"
+        />
+      </div>
+
+      <div class="patient-list">
+        <div class="patient-item" *ngFor="let paciente of pacientesFiltrados; let i = index">
+          <div class="patient-top">
+            <div>
+              <strong>{{ paciente.nombre }}</strong>
+              <span>CI: {{ paciente.cedula }}</span>
+            </div>
+
+            <button class="btn-delete" (click)="eliminarPaciente(i, paciente)">
+              Eliminar
+            </button>
+          </div>
+
+          <div class="patient-info-grid">
+            <div><label>Edad</label><p>{{ paciente.edad }}</p></div>
+            <div><label>Teléfono</label><p>{{ paciente.telefono }}</p></div>
+            <div><label>Dirección</label><p>{{ paciente.direccion || '—' }}</p></div>
+            <div><label>Género</label><p>{{ paciente.genero }}</p></div>
+            <div><label>Tipo de sangre</label><p>{{ paciente.tipoSangre }}</p></div>
+            <div><label>Alergias</label><p>{{ paciente.alergias || 'Ninguna' }}</p></div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="pacientesFiltrados.length === 0">
+          No se encontraron pacientes.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+<section class="page-shell">
+  <div class="page-topbar">
+    <div>
+      <span class="badge">Portal del paciente</span>
+      <h1>Historial clínico</h1>
+      <p>Consulta tu actividad e información reciente.</p>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn-logout" (click)="logout()">Salir</button>
+      <button class="btn-secondary" (click)="goDashboard()">Volver al panel</button>
+    </div>
+  </div>
+
+  <div class="panel-card">
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let item of items">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <small>{{ item.fecha }}</small>
+          <h4>{{ item.titulo }}</h4>
+          <p>{{ item.detalle }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

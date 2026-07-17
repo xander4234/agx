@@ -1,0 +1,172 @@
+<section class="patient-dashboard">
+  <div class="dashboard-shell">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="eyebrow">Portal del paciente</span>
+        <h1>Mi Salud</h1>
+        <p>
+          Bienvenido, {{ patientName }} · {{ specialty }} · {{ currentDate }}
+        </p>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="btn btn-logout" (click)="logout()">Salir</button>
+        <button class="btn btn-secondary" (click)="go('/paciente/historial')">Ver historial</button>
+        <button class="btn btn-primary" (click)="go('/paciente/citas')">Agendar cita</button>
+      </div>
+    </header>
+
+    <section class="stats-grid">
+      <article class="stat-card" *ngFor="let stat of stats">
+        <div class="stat-icon">{{ stat.icon }}</div>
+        <div class="stat-text">
+          <span>{{ stat.label }}</span>
+          <strong>{{ stat.value }}</strong>
+          <small>{{ stat.helper }}</small>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <div class="main-column">
+        <article class="panel-card">
+          <div class="panel-head">
+            <div>
+              <h3>Mis próximas citas</h3>
+              <p>Consulta y seguimiento de atenciones programadas</p>
+            </div>
+            <a href="javascript:void(0)" (click)="go('/paciente/citas')">Ver todas</a>
+          </div>
+
+          <div class="appointment-list">
+            <div class="appointment-item" *ngFor="let item of appointments">
+              <div class="appointment-date">
+                <strong>{{ item.date }}</strong>
+                <span>{{ item.time }}</span>
+              </div>
+
+              <div class="appointment-body">
+                <h4>{{ item.doctor }}</h4>
+                <p>{{ item.type }}</p>
+              </div>
+
+              <div class="appointment-status">
+                <span [class.pending]="item.status === 'Pendiente'">
+                  {{ item.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-head">
+            <div>
+              <h3>Resultados recientes</h3>
+              <p>Resultados y exámenes cargados en el sistema</p>
+            </div>
+            <a href="javascript:void(0)" (click)="go('/paciente/resultados')">Abrir resultados</a>
+          </div>
+
+          <div class="result-table">
+            <div class="result-row result-head">
+              <span>Examen</span>
+              <span>Fecha</span>
+              <span>Estado</span>
+            </div>
+
+            <div class="result-row" *ngFor="let item of results">
+              <span>{{ item.exam }}</span>
+              <span>{{ item.date }}</span>
+              <span class="status-pill" [class.new]="item.status === 'Nuevo'">
+                {{ item.status }}
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-head">
+            <div>
+              <h3>Historial reciente</h3>
+              <p>Eventos y actividad clínica reciente</p>
+            </div>
+            <a href="javascript:void(0)" (click)="go('/paciente/historial')">Ver historial</a>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-item" *ngFor="let item of history">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <small>{{ item.date }}</small>
+                <h4>{{ item.title }}</h4>
+                <p>{{ item.description }}</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="side-column">
+        <article class="panel-card">
+          <div class="panel-head">
+            <div>
+              <h3>Signos vitales</h3>
+              <p>Últimos registros guardados</p>
+            </div>
+          </div>
+
+          <div class="vitals-grid">
+            <div class="vital-card" *ngFor="let item of vitals">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+            </div>
+          </div>
+
+          <button class="btn btn-primary full" (click)="go('/paciente/signos-vitales')">
+            Registrar nuevos signos
+          </button>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-head">
+            <div>
+              <h3>Recetas activas</h3>
+              <p>Tratamiento actual y renovaciones</p>
+            </div>
+            <a href="javascript:void(0)" (click)="go('/paciente/recetas')">Ver recetas</a>
+          </div>
+
+          <div class="prescription-list">
+            <div class="prescription-item" *ngFor="let item of prescriptions">
+              <div>
+                <h4>{{ item.name }}</h4>
+                <p>{{ item.dose }}</p>
+                <small>{{ item.duration }}</small>
+              </div>
+              <span class="status-pill" [class.warning]="item.status === 'Por renovar'">
+                {{ item.status }}
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel-card quick-actions">
+          <div class="panel-head">
+            <div>
+              <h3>Acciones rápidas</h3>
+              <p>Accesos principales del paciente</p>
+            </div>
+          </div>
+
+          <div class="quick-grid">
+            <button (click)="go('/paciente/citas')">Agendar cita</button>
+            <button (click)="go('/paciente/recetas')">Ver recetas</button>
+            <button (click)="go('/paciente/signos-vitales')">Subir signos</button>
+            <button (click)="go('/paciente/resultados')">Descargar resultados</button>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </div>
+</section>

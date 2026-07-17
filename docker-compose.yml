@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   db:
     image: postgres:16
@@ -11,5 +10,10 @@ services:
       - "5435:5432"
     volumes:
       - agx_health_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agx -d agx_health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 volumes:
   agx_health_pgdata:

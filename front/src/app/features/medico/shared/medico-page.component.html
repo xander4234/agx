@@ -1,0 +1,51 @@
+<section class="page-shell">
+  <div class="page-topbar">
+    <div>
+      <span class="badge">AGX Salud</span>
+      <h1>{{ title }}</h1>
+      <p>{{ description }}</p>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn-logout" (click)="logout()">Salir</button>
+      <button class="btn-secondary" (click)="goDashboard()">Volver al dashboard</button>
+    </div>
+  </div>
+
+  <div class="page-card">
+    <div class="hero-block">
+      <div class="hero-icon">🩺</div>
+
+      <div class="hero-content">
+        <h2>{{ title }}</h2>
+        <p>
+          Este módulo ya está conectado a las rutas del sistema.
+          Aquí puedes continuar agregando formularios, tablas, filtros,
+          reportes y lógica de negocio según tu necesidad.
+        </p>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="info-label">Módulo activo</span>
+        <strong>{{ title }}</strong>
+      </div>
+
+      <div class="info-card">
+        <span class="info-label">Estado</span>
+        <strong>Disponible</strong>
+      </div>
+
+      <div class="info-card">
+        <span class="info-label">Acceso</span>
+        <strong>Médico</strong>
+      </div>
+    </div>
+
+    <div class="content-box">
+      <h3>Descripción</h3>
+      <p>{{ description }}</p>
+    </div>
+  </div>
+</section>

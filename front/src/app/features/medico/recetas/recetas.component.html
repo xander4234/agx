@@ -1,0 +1,187 @@
+<section class="recipe-shell">
+  <div class="recipe-header">
+    <div>
+      <span class="badge">Receta médica</span>
+      <h1>Emisión de receta</h1>
+      <p>Ingresa medicamentos, dosis e indicaciones y genera una impresión profesional.</p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn-secondary" (click)="goDashboard()">Volver</button>
+      <button type="button" class="btn-primary" (click)="printRecipe()">Imprimir receta</button>
+    </div>
+  </div>
+
+  <div class="recipe-grid">
+    <div class="form-panel">
+      <div class="panel-card">
+        <h3>Datos del profesional</h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Médico</label>
+            <input type="text" [(ngModel)]="doctorName" />
+          </div>
+
+          <div class="form-group">
+            <label>Especialidad</label>
+            <input type="text" [(ngModel)]="specialty" />
+          </div>
+
+          <div class="form-group">
+            <label>Registro profesional</label>
+            <input type="text" [(ngModel)]="license" />
+          </div>
+
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="text" [(ngModel)]="date" />
+          </div>
+
+          <div class="form-group">
+            <label>Clínica / Hospital</label>
+            <input type="text" [(ngModel)]="clinicName" />
+          </div>
+
+          <div class="form-group">
+            <label>Subtítulo</label>
+            <input type="text" [(ngModel)]="clinicSubtitle" />
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Datos del paciente</h3>
+
+        <div class="form-grid">
+          <div class="form-group full-col">
+            <label>Paciente</label>
+            <input
+              type="text"
+              [(ngModel)]="patientName"
+              placeholder="Nombre del paciente"
+            />
+          </div>
+
+          <div class="form-group full-col">
+            <label>Dirección</label>
+            <input
+              type="text"
+              [(ngModel)]="patientAddress"
+              placeholder="Dirección del paciente"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Edad</label>
+            <input
+              type="text"
+              [(ngModel)]="patientAge"
+              placeholder="Edad"
+            />
+          </div>
+
+          <div class="form-group full-col">
+            <label>Diagnóstico</label>
+            <textarea
+              [(ngModel)]="diagnosis"
+              rows="3"
+              placeholder="Diagnóstico o motivo de consulta"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-row">
+          <h3>Medicamentos</h3>
+          <button type="button" class="btn-primary small" (click)="addMedication()">
+            Agregar medicamento
+          </button>
+        </div>
+
+        <div class="med-card" *ngFor="let item of medications; let i = index">
+          <div class="panel-row med-title">
+            <strong>Medicamento {{ i + 1 }}</strong>
+            <button
+              type="button"
+              class="btn-danger"
+              (click)="removeMedication(i)"
+            >
+              Eliminar
+            </button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Medicamento</label>
+              <input
+                type="text"
+                [(ngModel)]="item.medicamento"
+                placeholder="Ej. Amoxicilina"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Presentación</label>
+              <input
+                type="text"
+                [(ngModel)]="item.presentacion"
+                placeholder="Ej. 500 mg tabletas"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Dosis</label>
+              <input
+                type="text"
+                [(ngModel)]="item.dosis"
+                placeholder="Ej. 1 tableta"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Frecuencia</label>
+              <input
+                type="text"
+                [(ngModel)]="item.frecuencia"
+                placeholder="Ej. cada 8 horas"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Duración</label>
+              <input
+                type="text"
+                [(ngModel)]="item.duracion"
+                placeholder="Ej. 7 días"
+              />
+            </div>
+
+            <div class="form-group full-col">
+              <label>Indicaciones</label>
+              <textarea
+                [(ngModel)]="item.indicaciones"
+                rows="2"
+                placeholder="Indicaciones específicas para el paciente"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Observaciones</h3>
+
+        <div class="form-group full-col">
+          <label>Notas adicionales</label>
+          <textarea
+            [(ngModel)]="notes"
+            rows="4"
+            placeholder="Observaciones médicas, recomendaciones y advertencias"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

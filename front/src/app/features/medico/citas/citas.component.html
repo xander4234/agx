@@ -1,0 +1,119 @@
+<section class="citas-shell">
+  <div class="citas-topbar">
+    <div>
+      <span class="badge-brand">AGX Salud</span>
+      <h1>Nueva cita médica</h1>
+      <p class="subtitle">Registra y administra citas médicas desde el sistema.</p>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn-outline" (click)="goDashboard()">Volver al dashboard</button>
+    </div>
+  </div>
+
+  <div class="citas-grid">
+    <div class="panel-card">
+      <div class="panel-header">
+        <div>
+          <h3>Registrar cita</h3>
+          <p>Completa la información del paciente y la atención.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Paciente</label>
+          <input type="text" [(ngModel)]="paciente" placeholder="Nombre completo del paciente" />
+        </div>
+
+        <div class="form-group">
+          <label>Cédula</label>
+          <input type="text" [(ngModel)]="cedula" placeholder="Número de cédula" />
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="telefono" placeholder="Número de contacto" />
+        </div>
+
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" [(ngModel)]="fecha" />
+        </div>
+
+        <div class="form-group">
+          <label>Hora</label>
+          <input type="time" [(ngModel)]="hora" />
+        </div>
+
+        <div class="form-group">
+          <label>Tipo de cita</label>
+          <select [(ngModel)]="tipo">
+            <option>Consulta general</option>
+            <option>Control</option>
+            <option>Revisión de exámenes</option>
+            <option>Chequeo pediátrico</option>
+            <option>Urgencia</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="estado">
+            <option>Confirmada</option>
+            <option>En espera</option>
+            <option>Pendiente</option>
+            <option>Cancelada</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>Motivo</label>
+          <textarea [(ngModel)]="motivo" rows="4" placeholder="Detalle del motivo de consulta"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" (click)="guardarCita()">Guardar cita</button>
+        <button class="btn-outline" (click)="limpiarFormulario()">Limpiar</button>
+      </div>
+
+      <div class="mensaje-ok" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-header">
+        <div>
+          <h3>Agenda registrada</h3>
+          <p>Citas creadas dentro del módulo.</p>
+        </div>
+      </div>
+
+      <div class="lista-citas">
+        <div class="cita-item" *ngFor="let cita of citas; let i = index">
+          <div class="cita-main">
+            <div class="cita-time">
+              <strong>{{ cita.hora }}</strong>
+              <span>{{ cita.fecha }}</span>
+            </div>
+
+            <div class="cita-body">
+              <h4>{{ cita.paciente }}</h4>
+              <p>{{ cita.tipo }} · {{ cita.motivo }}</p>
+              <small>Cédula: {{ cita.cedula }} · Tel: {{ cita.telefono }}</small>
+            </div>
+
+            <div class="cita-side">
+              <span class="estado-pill" [ngClass]="getEstadoClass(cita.estado)">
+                {{ cita.estado }}
+              </span>
+              <button class="btn-delete" (click)="eliminarCita(i)">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
