@@ -1,13 +1,757 @@
-<!DOCTYPE html><html lang="en" data-critters-container><head>
-  <meta charset="utf-8">
-  <title>AgxSaludLogin</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-<style>html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb}body{color:#0f172a}
-</style><link rel="stylesheet" href="styles-ZSGAAA2M.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles-ZSGAAA2M.css"></noscript><link rel="modulepreload" href="chunk-IVN5JHY4.js"><link rel="modulepreload" href="chunk-AUZNYQC4.js"><style ng-app-id="ng">[_nghost-ng-c3984273398]{display:block;min-height:100vh;font-family:Arial,Helvetica,sans-serif}.login-shell[_ngcontent-ng-c3984273398]{min-height:100vh;padding:24px;background:radial-gradient(circle at top left,rgba(34,211,238,.12),transparent 30%),radial-gradient(circle at bottom right,rgba(16,185,129,.12),transparent 30%),#eef4f5}.login-layout[_ngcontent-ng-c3984273398]{min-height:calc(100vh - 48px);display:grid;grid-template-columns:1.4fr .9fr;gap:0;overflow:hidden;border-radius:28px;background:#ffffffc7;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 20px 60px #0f172a14}.hero-panel[_ngcontent-ng-c3984273398]{position:relative;min-height:760px;overflow:hidden;background:#123}.hero-bg[_ngcontent-ng-c3984273398]{position:absolute;inset:-30px;background-image:linear-gradient(#091e287a,#091e287a),url(https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1400&q=80);background-size:cover;background-position:center;transition:transform .25s ease-out;animation:_ngcontent-ng-c3984273398_slowZoom 10s ease-in-out infinite alternate}.hero-overlay[_ngcontent-ng-c3984273398]{position:absolute;inset:0;background:linear-gradient(90deg,#05121966,#0512190f),radial-gradient(circle at 70% 20%,rgba(255,255,255,.18),transparent 18%)}.hero-glow[_ngcontent-ng-c3984273398]{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.22),rgba(45,212,191,.02) 70%,transparent 75%);top:10%;left:55%;filter:blur(8px);transition:transform .2s ease-out}.hero-content[_ngcontent-ng-c3984273398]{position:relative;z-index:2;max-width:620px;padding:70px 46px;color:#fff;transition:transform .22s ease-out}.hero-badge[_ngcontent-ng-c3984273398]{display:inline-block;padding:12px 18px;border-radius:999px;background:#ffffff2e;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-weight:700;font-size:14px;letter-spacing:.8px;margin-bottom:24px}.hero-content[_ngcontent-ng-c3984273398]   h1[_ngcontent-ng-c3984273398]{font-size:clamp(3rem,6vw,5.4rem);line-height:.95;margin:0 0 20px;font-weight:800}.hero-content[_ngcontent-ng-c3984273398]   p[_ngcontent-ng-c3984273398]{max-width:560px;font-size:1.05rem;line-height:1.6;color:#ffffffeb;margin-bottom:28px}.hero-cards[_ngcontent-ng-c3984273398]{display:flex;gap:14px;flex-wrap:wrap;margin-top:22px}.mini-card[_ngcontent-ng-c3984273398]{min-width:150px;padding:20px 18px;border-radius:22px;color:#fff;background:#ffffff24;border:1px solid rgba(255,255,255,.25);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 12px 30px #0000001f}.mini-card[_ngcontent-ng-c3984273398]   strong[_ngcontent-ng-c3984273398]{display:block;font-size:1.7rem;margin-bottom:6px}.mini-card[_ngcontent-ng-c3984273398]   span[_ngcontent-ng-c3984273398]{display:block;font-size:.95rem;line-height:1.3}.float-1[_ngcontent-ng-c3984273398]{animation:_ngcontent-ng-c3984273398_floatCard 4s ease-in-out infinite}.float-2[_ngcontent-ng-c3984273398]{animation:_ngcontent-ng-c3984273398_floatCard 5s ease-in-out infinite}.float-3[_ngcontent-ng-c3984273398]{animation:_ngcontent-ng-c3984273398_floatCard 6s ease-in-out infinite}.login-panel[_ngcontent-ng-c3984273398]{display:flex;align-items:center;justify-content:center;padding:36px;transition:transform .25s ease-out}.login-card[_ngcontent-ng-c3984273398]{width:100%;max-width:470px;padding:36px 32px;border-radius:30px;background:#ffffffeb;border:1px solid rgba(14,116,144,.1);box-shadow:0 18px 40px #0f172a14;position:relative;overflow:hidden}.login-card[_ngcontent-ng-c3984273398]:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:6px;background:linear-gradient(90deg,#16a34a,#06b6d4)}.brand-row[_ngcontent-ng-c3984273398]{display:flex;align-items:center;gap:14px;margin-bottom:22px}.brand-icon[_ngcontent-ng-c3984273398]{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:#dff6f4;color:#0f766e;font-size:24px;font-weight:700}.brand-title[_ngcontent-ng-c3984273398]{font-size:1.1rem;font-weight:800;color:#0f172a}.brand-sub[_ngcontent-ng-c3984273398]{color:#64748b}.eyebrow[_ngcontent-ng-c3984273398]{color:#0f9a8b;font-weight:800;font-size:14px;letter-spacing:1px;margin-bottom:8px}.login-card[_ngcontent-ng-c3984273398]   h2[_ngcontent-ng-c3984273398]{font-size:clamp(2.1rem,4vw,3rem);line-height:1;margin:0 0 10px;color:#0f172a}.subtext[_ngcontent-ng-c3984273398]{margin:0 0 24px;color:#64748b}.role-switcher[_ngcontent-ng-c3984273398]{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}.role-option[_ngcontent-ng-c3984273398]{display:flex;gap:10px;align-items:center;padding:14px;border-radius:18px;border:1px solid #d8e0e5;background:#fff;cursor:pointer;transition:all .25s ease}.role-option[_ngcontent-ng-c3984273398]:hover, .role-option.active[_ngcontent-ng-c3984273398]{transform:translateY(-2px);border-color:#9fd9d3;box-shadow:0 10px 25px #0f766e14}.role-icon[_ngcontent-ng-c3984273398]{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#eff9f8}.role-option[_ngcontent-ng-c3984273398]   strong[_ngcontent-ng-c3984273398]{display:block;color:#0f172a}.role-option[_ngcontent-ng-c3984273398]   span[_ngcontent-ng-c3984273398]{display:block;font-size:.95rem;color:#64748b;line-height:1.35}.login-form[_ngcontent-ng-c3984273398]{display:flex;flex-direction:column;gap:12px}.login-form[_ngcontent-ng-c3984273398]   label[_ngcontent-ng-c3984273398]{font-weight:700;color:#1f2937}.login-form[_ngcontent-ng-c3984273398]   input[_ngcontent-ng-c3984273398]{width:100%;height:52px;border-radius:16px;border:1px solid #d8e0e5;padding:0 16px;font-size:15px;outline:none;transition:all .25s ease}.login-form[_ngcontent-ng-c3984273398]   input[_ngcontent-ng-c3984273398]:focus{border-color:#14b8a6;box-shadow:0 0 0 4px #14b8a61f}.password-wrap[_ngcontent-ng-c3984273398]{position:relative}.password-btn[_ngcontent-ng-c3984273398]{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:#0f766e;font-weight:700;cursor:pointer}.form-row[_ngcontent-ng-c3984273398]{display:flex;align-items:center;justify-content:space-between;margin:4px 0 8px;gap:10px}.remember[_ngcontent-ng-c3984273398]{display:flex;align-items:center;gap:8px;font-weight:500!important;color:#64748b!important}.form-row[_ngcontent-ng-c3984273398]   a[_ngcontent-ng-c3984273398]{text-decoration:none;color:#0f9a8b;font-weight:700}.btn-primary[_ngcontent-ng-c3984273398]{height:54px;border:none;border-radius:16px;background:linear-gradient(90deg,#0f9a8b,#27c7c0);color:#fff;font-size:18px;font-weight:800;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}.btn-primary[_ngcontent-ng-c3984273398]:hover{transform:translateY(-2px);box-shadow:0 12px 25px #0f9a8b40}@keyframes _ngcontent-ng-c3984273398_slowZoom{0%{transform:scale(1.05)}to{transform:scale(1.11)}}@keyframes _ngcontent-ng-c3984273398_floatCard{0%,to{transform:translateY(0)}50%{transform:translateY(-10px)}}@media (max-width: 1100px){.login-layout[_ngcontent-ng-c3984273398]{grid-template-columns:1fr}.hero-panel[_ngcontent-ng-c3984273398]{min-height:520px}.login-panel[_ngcontent-ng-c3984273398]{padding:24px}}@media (max-width: 720px){.login-shell[_ngcontent-ng-c3984273398]{padding:12px}.hero-content[_ngcontent-ng-c3984273398]{padding:34px 24px}.hero-content[_ngcontent-ng-c3984273398]   h1[_ngcontent-ng-c3984273398]{font-size:2.7rem}.login-card[_ngcontent-ng-c3984273398]{padding:24px 20px;border-radius:24px}.role-switcher[_ngcontent-ng-c3984273398]{grid-template-columns:1fr}}</style><style ng-app-id="ng">[_nghost-ng-c1322790297]{display:block;min-height:100vh;font-family:Arial,Helvetica,sans-serif}*[_ngcontent-ng-c1322790297]{box-sizing:border-box}button[_ngcontent-ng-c1322790297], input[_ngcontent-ng-c1322790297]{font-family:inherit}.login-shell[_ngcontent-ng-c1322790297]{position:relative;min-height:100vh;overflow:hidden;padding:24px;background:radial-gradient(circle at top left,rgba(44,198,187,.14),transparent 30%),radial-gradient(circle at bottom right,rgba(44,198,187,.1),transparent 28%),linear-gradient(180deg,#eef3f4,#e9f0f1)}.ecg-shell[_ngcontent-ng-c1322790297]{position:absolute;height:84px;opacity:.18;z-index:1;overflow:hidden;pointer-events:none}.ecg-shell[_ngcontent-ng-c1322790297]:before{content:"";position:absolute;inset:0;background-repeat:repeat-x;background-size:360px 84px;animation:_ngcontent-ng-c1322790297_ecgMove 7s linear infinite,ecgPulse 2.8s ease-in-out infinite;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 84'><path d='M0 42 L74 42 L96 42 L112 22 L126 62 L142 10 L158 70 L176 42 L220 42 L246 42 L262 34 L278 52 L296 42 L360 42' fill='none' stroke='%2314b8a6' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'/></svg>")}.ecg-shell-1[_ngcontent-ng-c1322790297]{width:500px;top:78px;right:70px}.ecg-shell-2[_ngcontent-ng-c1322790297]{width:440px;bottom:80px;right:140px;transform:rotate(-2deg)}.bg-orb[_ngcontent-ng-c1322790297]{position:absolute;border-radius:50%;filter:blur(4px);opacity:.25;z-index:1;animation:_ngcontent-ng-c1322790297_orbFloat 10s ease-in-out infinite}.orb-1[_ngcontent-ng-c1322790297]{width:260px;height:260px;left:-70px;top:90px;background:radial-gradient(circle,rgba(34,197,214,.32),transparent 70%)}.orb-2[_ngcontent-ng-c1322790297]{width:220px;height:220px;right:70px;top:120px;background:radial-gradient(circle,rgba(20,184,166,.26),transparent 70%);animation-delay:1.5s}.orb-3[_ngcontent-ng-c1322790297]{width:260px;height:260px;right:130px;bottom:60px;background:radial-gradient(circle,rgba(139,92,246,.18),transparent 70%);animation-delay:3s}.login-layout[_ngcontent-ng-c1322790297]{position:relative;min-height:calc(100vh - 48px);display:grid;grid-template-columns:1.38fr 1fr;overflow:hidden;border-radius:34px;background:#ffffffb8;border:1px solid rgba(255,255,255,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 28px 70px #0f172a14;z-index:2}.hero-panel[_ngcontent-ng-c1322790297]{position:relative;min-height:860px;overflow:hidden}.hero-bg[_ngcontent-ng-c1322790297]{position:absolute;inset:0;background-image:linear-gradient(#0719258f,#07192585),url(/assets/images/pediatra.jpg);background-size:cover;background-position:center;transform:scale(1.04);animation:_ngcontent-ng-c1322790297_heroZoom 12s ease-in-out infinite alternate}.hero-overlay[_ngcontent-ng-c1322790297]{position:absolute;inset:0;background:radial-gradient(circle at 78% 18%,rgba(255,255,255,.14),transparent 20%),linear-gradient(90deg,#04162257,#04162214)}.hero-ecg[_ngcontent-ng-c1322790297]{position:absolute;height:80px;opacity:.22;z-index:1;overflow:hidden;pointer-events:none}.hero-ecg[_ngcontent-ng-c1322790297]:before{content:"";position:absolute;inset:0;background-repeat:repeat-x;background-size:360px 80px;animation:_ngcontent-ng-c1322790297_ecgMove 6s linear infinite,ecgPulse 2.4s ease-in-out infinite;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 80'><path d='M0 40 L68 40 L92 40 L108 22 L124 60 L140 12 L156 66 L172 40 L226 40 L248 40 L264 30 L282 50 L300 40 L360 40' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>")}.hero-ecg-1[_ngcontent-ng-c1322790297]{width:420px;top:90px;left:46px}.hero-ecg-2[_ngcontent-ng-c1322790297]{width:460px;bottom:110px;left:80px;transform:rotate(-1deg)}.hero-content[_ngcontent-ng-c1322790297]{position:relative;z-index:2;max-width:680px;padding:74px 48px;color:#fff}.hero-badge[_ngcontent-ng-c1322790297]{display:inline-block;padding:12px 18px;border-radius:999px;background:#ffffff2e;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-weight:700;font-size:14px;letter-spacing:.8px;margin-bottom:26px}.hero-content[_ngcontent-ng-c1322790297]   h1[_ngcontent-ng-c1322790297]{font-size:clamp(3.5rem,6vw,5.8rem);line-height:.93;margin:0 0 20px;font-weight:800}.hero-content[_ngcontent-ng-c1322790297]   p[_ngcontent-ng-c1322790297]{max-width:580px;font-size:1.15rem;line-height:1.6;color:#ffffffed;margin-bottom:34px}.hero-cards[_ngcontent-ng-c1322790297]{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px}.mini-card[_ngcontent-ng-c1322790297]{min-width:170px;max-width:230px;padding:22px 18px;border-radius:24px;color:#fff;background:#ffffff24;border:1px solid rgba(255,255,255,.25);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 12px 30px #0000001f}.mini-card[_ngcontent-ng-c1322790297]   strong[_ngcontent-ng-c1322790297]{display:block;font-size:1.8rem;margin-bottom:8px}.mini-card[_ngcontent-ng-c1322790297]   span[_ngcontent-ng-c1322790297]{display:block;font-size:1rem;line-height:1.35}.float-1[_ngcontent-ng-c1322790297]{animation:_ngcontent-ng-c1322790297_floatCard 4s ease-in-out infinite}.float-2[_ngcontent-ng-c1322790297]{animation:_ngcontent-ng-c1322790297_floatCard 5s ease-in-out infinite}.float-3[_ngcontent-ng-c1322790297]{animation:_ngcontent-ng-c1322790297_floatCard 6s ease-in-out infinite}.login-panel[_ngcontent-ng-c1322790297]{display:flex;align-items:center;justify-content:center;padding:30px 36px}.login-card[_ngcontent-ng-c1322790297]{position:relative;width:100%;max-width:850px;padding:100px 80px;border-radius:56px;background:#fffffff2;border:1px solid rgba(14,116,144,.1);box-shadow:0 24px 55px #0f172a1a;overflow:hidden}.login-card[_ngcontent-ng-c1322790297]:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:7px;background:linear-gradient(90deg,#10b981,#14b8a6,#22c7f0)}.login-card[_ngcontent-ng-c1322790297]:after{content:"";position:absolute;width:180px;height:180px;right:-70px;top:-70px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,214,.14),transparent 70%);pointer-events:none}.brand-row[_ngcontent-ng-c1322790297]{display:flex;align-items:center;gap:16px;margin-bottom:26px}.brand-icon[_ngcontent-ng-c1322790297]{width:62px;height:62px;border-radius:18px;display:grid;place-items:center;background:#dff6f4;color:#0f766e;font-size:28px;font-weight:800;box-shadow:0 10px 22px #0f766e26}.brand-title[_ngcontent-ng-c1322790297]{font-size:1.45rem;font-weight:800;color:#0f172a}.brand-sub[_ngcontent-ng-c1322790297]{font-size:1.05rem;color:#64748b}.eyebrow[_ngcontent-ng-c1322790297]{color:#0f9a8b;font-weight:800;font-size:17px;letter-spacing:1px;margin-bottom:10px}.login-card[_ngcontent-ng-c1322790297]   h2[_ngcontent-ng-c1322790297]{font-size:clamp(3.2rem,4vw,4.3rem);line-height:1;margin:0 0 12px;color:#0f172a}.subtext[_ngcontent-ng-c1322790297]{margin:0 0 28px;font-size:1.12rem;color:#64748b}.role-switcher[_ngcontent-ng-c1322790297]{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:30px}.role-option[_ngcontent-ng-c1322790297]{display:flex;gap:12px;align-items:center;padding:18px 16px;border-radius:20px;border:1px solid #d8e0e5;background:#fff;cursor:pointer;transition:all .25s ease}.role-option[_ngcontent-ng-c1322790297]:hover, .role-option.active[_ngcontent-ng-c1322790297]{transform:translateY(-3px);border-color:#9fd9d3;box-shadow:0 12px 25px #0f766e1a}.role-icon[_ngcontent-ng-c1322790297]{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#eff9f8;font-size:20px}.role-option[_ngcontent-ng-c1322790297]   strong[_ngcontent-ng-c1322790297]{display:block;text-align:left;font-size:1.15rem;color:#0f172a}.role-option[_ngcontent-ng-c1322790297]   span[_ngcontent-ng-c1322790297]{display:block;text-align:left;font-size:1rem;color:#64748b;line-height:1.35}.login-form[_ngcontent-ng-c1322790297]{display:flex;flex-direction:column;gap:14px}.login-form[_ngcontent-ng-c1322790297]   label[_ngcontent-ng-c1322790297]{font-size:1.08rem;font-weight:700;color:#1f2937}.login-form[_ngcontent-ng-c1322790297]   input[type=email][_ngcontent-ng-c1322790297], .login-form[_ngcontent-ng-c1322790297]   input[type=password][_ngcontent-ng-c1322790297], .login-form[_ngcontent-ng-c1322790297]   input[type=text][_ngcontent-ng-c1322790297]{width:100%;height:62px;border-radius:18px;border:1px solid #d8e0e5;padding:0 18px;font-size:17px;outline:none;transition:all .25s ease;background:#fff}.login-form[_ngcontent-ng-c1322790297]   input[type=email][_ngcontent-ng-c1322790297]:focus, .login-form[_ngcontent-ng-c1322790297]   input[type=password][_ngcontent-ng-c1322790297]:focus, .login-form[_ngcontent-ng-c1322790297]   input[type=text][_ngcontent-ng-c1322790297]:focus{border-color:#14b8a6;box-shadow:0 0 0 4px #14b8a61f}.password-wrap[_ngcontent-ng-c1322790297]{position:relative}.password-btn[_ngcontent-ng-c1322790297]{position:absolute;right:16px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:#0f766e;font-size:1rem;font-weight:700;cursor:pointer}.form-row[_ngcontent-ng-c1322790297]{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px;gap:10px}.remember[_ngcontent-ng-c1322790297]{display:flex;align-items:center;gap:8px;font-weight:500!important;color:#64748b!important}.remember[_ngcontent-ng-c1322790297]   input[_ngcontent-ng-c1322790297]{width:auto;height:auto;margin:0}.form-row[_ngcontent-ng-c1322790297]   a[_ngcontent-ng-c1322790297]{text-decoration:none;color:#0f9a8b;font-weight:700;font-size:1rem}.btn-primary[_ngcontent-ng-c1322790297]{height:64px;border:none;border-radius:18px;background:linear-gradient(90deg,#11998e,#2ad0cc);color:#fff;font-size:1.5rem;font-weight:800;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}.btn-primary[_ngcontent-ng-c1322790297]:hover{transform:translateY(-2px);box-shadow:0 14px 28px #0f9a8b40}@keyframes _ngcontent-ng-c1322790297_ecgMove{0%{background-position-x:0}to{background-position-x:-360px}}@keyframes _ngcontent-ng-c1322790297_ecgPulse{0%,to{opacity:.18;transform:scaleY(1)}50%{opacity:.42;transform:scaleY(1.06)}}@keyframes _ngcontent-ng-c1322790297_heroZoom{0%{transform:scale(1.04)}to{transform:scale(1.09)}}@keyframes _ngcontent-ng-c1322790297_floatCard{0%,to{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes _ngcontent-ng-c1322790297_orbFloat{0%,to{transform:translateY(0) translate(0)}50%{transform:translateY(-18px) translate(10px)}}@media (max-width: 1200px){.login-layout[_ngcontent-ng-c1322790297]{grid-template-columns:1fr}.hero-panel[_ngcontent-ng-c1322790297]{min-height:560px}.login-panel[_ngcontent-ng-c1322790297]{padding:24px}}@media (max-width: 820px){.login-shell[_ngcontent-ng-c1322790297]{padding:12px}.hero-content[_ngcontent-ng-c1322790297]{padding:34px 24px}.hero-content[_ngcontent-ng-c1322790297]   h1[_ngcontent-ng-c1322790297]{font-size:3rem}.login-card[_ngcontent-ng-c1322790297]{max-width:100%;padding:32px 22px;border-radius:26px}.login-card[_ngcontent-ng-c1322790297]   h2[_ngcontent-ng-c1322790297]{font-size:2.8rem}.role-switcher[_ngcontent-ng-c1322790297]{grid-template-columns:1fr}.ecg-shell-1[_ngcontent-ng-c1322790297], .ecg-shell-2[_ngcontent-ng-c1322790297], .hero-ecg-1[_ngcontent-ng-c1322790297], .hero-ecg-2[_ngcontent-ng-c1322790297]{opacity:.12}}@media (max-width: 600px){.hero-panel[_ngcontent-ng-c1322790297]{min-height:420px}.hero-content[_ngcontent-ng-c1322790297]   h1[_ngcontent-ng-c1322790297]{font-size:2.5rem}.hero-cards[_ngcontent-ng-c1322790297]{gap:10px}.mini-card[_ngcontent-ng-c1322790297]{min-width:100%;max-width:100%}.ecg-shell[_ngcontent-ng-c1322790297], .hero-ecg[_ngcontent-ng-c1322790297]{display:none}}</style></head>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AGX Salud — Dashboard Médico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
 <body>
-  <app-root _nghost-ng-c3984273398 ng-version="17.3.12" ng-server-context="ssg"><router-outlet _ngcontent-ng-c3984273398></router-outlet><app-login _nghost-ng-c1322790297><section _ngcontent-ng-c1322790297 class="login-shell"><div _ngcontent-ng-c1322790297 class="ecg-shell ecg-shell-1"></div><div _ngcontent-ng-c1322790297 class="ecg-shell ecg-shell-2"></div><div _ngcontent-ng-c1322790297 class="bg-orb orb-1"></div><div _ngcontent-ng-c1322790297 class="bg-orb orb-2"></div><div _ngcontent-ng-c1322790297 class="bg-orb orb-3"></div><div _ngcontent-ng-c1322790297 class="login-layout"><div _ngcontent-ng-c1322790297 class="hero-panel"><div _ngcontent-ng-c1322790297 class="hero-bg"></div><div _ngcontent-ng-c1322790297 class="hero-overlay"></div><div _ngcontent-ng-c1322790297 class="hero-ecg hero-ecg-1"></div><div _ngcontent-ng-c1322790297 class="hero-ecg hero-ecg-2"></div><div _ngcontent-ng-c1322790297 class="hero-content"><span _ngcontent-ng-c1322790297 class="hero-badge">AGX SALUD · PORTAL CLÍNICO DIGITAL</span><h1 _ngcontent-ng-c1322790297> Cuidado médico confiable, ágil y siempre disponible. </h1><p _ngcontent-ng-c1322790297> Una plataforma diseñada para brindar acceso seguro a pacientes y profesionales de la salud, con una experiencia moderna, clara y profesional. </p><div _ngcontent-ng-c1322790297 class="hero-cards"><div _ngcontent-ng-c1322790297 class="mini-card float-1"><strong _ngcontent-ng-c1322790297>Agenda</strong><span _ngcontent-ng-c1322790297>Citas y seguimiento</span></div><div _ngcontent-ng-c1322790297 class="mini-card float-2"><strong _ngcontent-ng-c1322790297>Historial</strong><span _ngcontent-ng-c1322790297>Información clínica centralizada</span></div><div _ngcontent-ng-c1322790297 class="mini-card float-3"><strong _ngcontent-ng-c1322790297>Atención</strong><span _ngcontent-ng-c1322790297>Portal disponible para paciente y médico</span></div></div></div></div><div _ngcontent-ng-c1322790297 class="login-panel"><div _ngcontent-ng-c1322790297 class="login-card"><div _ngcontent-ng-c1322790297 class="brand-row"><div _ngcontent-ng-c1322790297 class="brand-icon">✚</div><div _ngcontent-ng-c1322790297><div _ngcontent-ng-c1322790297 class="brand-title">AGX Salud</div><div _ngcontent-ng-c1322790297 class="brand-sub">Portal médico seguro</div></div></div><div _ngcontent-ng-c1322790297 class="eyebrow">ACCESO PRINCIPAL</div><h2 _ngcontent-ng-c1322790297>Iniciar sesión</h2><p _ngcontent-ng-c1322790297 class="subtext">Acceso para pacientes y profesionales de salud</p><div _ngcontent-ng-c1322790297 class="role-switcher"><button _ngcontent-ng-c1322790297 type="button" class="role-option active"><div _ngcontent-ng-c1322790297 class="role-icon">👤</div><div _ngcontent-ng-c1322790297><strong _ngcontent-ng-c1322790297>Paciente</strong><span _ngcontent-ng-c1322790297>Agenda, resultados y seguimiento</span></div></button><button _ngcontent-ng-c1322790297 type="button" class="role-option"><div _ngcontent-ng-c1322790297 class="role-icon">🩺</div><div _ngcontent-ng-c1322790297><strong _ngcontent-ng-c1322790297>Médico</strong><span _ngcontent-ng-c1322790297>Consultas, agenda e historial</span></div></button></div><form _ngcontent-ng-c1322790297 novalidate class="login-form ng-untouched ng-pristine ng-invalid"><label _ngcontent-ng-c1322790297 for="email">Correo electrónico</label><input _ngcontent-ng-c1322790297 id="email" type="email" name="email" placeholder="usuario@agxsalud.com" required class="ng-untouched ng-pristine ng-invalid" value><label _ngcontent-ng-c1322790297 for="password">Contraseña</label><div _ngcontent-ng-c1322790297 class="password-wrap"><input _ngcontent-ng-c1322790297 id="password" name="password" placeholder="Ingrese su contraseña" required type="password" class="ng-untouched ng-pristine ng-invalid" value><button _ngcontent-ng-c1322790297 type="button" class="password-btn"> Ver </button></div><div _ngcontent-ng-c1322790297 class="form-row"><label _ngcontent-ng-c1322790297 class="remember"><input _ngcontent-ng-c1322790297 type="checkbox"><span _ngcontent-ng-c1322790297>Recordar sesión</span></label><a _ngcontent-ng-c1322790297 href="#">Olvidé mi contraseña</a></div><button _ngcontent-ng-c1322790297 type="submit" class="btn-primary"> Ingresar al portal </button><!----><div _ngcontent-ng-c1322790297 style="margin-top: 16px; padding: 14px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; font-size: 14px;"><strong _ngcontent-ng-c1322790297>Accesos demo:</strong><br _ngcontent-ng-c1322790297> Médico: medico@agxsalud.com / 123456<br _ngcontent-ng-c1322790297> Paciente: paciente@agxsalud.com / 123456<br _ngcontent-ng-c1322790297> Admin: admin@agxsalud.com / Admin123! </div></form></div></div></div></section></app-login><!----></app-root>
-<script src="polyfills-FFHMD2TL.js" type="module"></script><script src="main-4LAGDJRL.js" type="module"></script>
 
-</body></html>
+  <!-- ============ LOGIN ============ -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-wrap">
+
+      <!-- Panel izquierdo: branding animado -->
+      <div class="login-left">
+        <div class="pulse-rings"><span></span><span></span><span></span></div>
+        <div class="float-ico f1">💊</div>
+        <div class="float-ico f2">🩺</div>
+        <div class="float-ico f3">❤️</div>
+        <div class="float-ico f4">🧬</div>
+        <div class="float-ico f5">✚</div>
+
+        <div class="login-left-content">
+          <div class="brand-chip chip-light">AGX Salud</div>
+          <h1 class="login-hero">Tu clínica,<br><span class="login-grad">siempre conectada</span></h1>
+          <p class="login-tagline" id="loginTagline">Gestión médica inteligente para tu equipo</p>
+
+          <svg class="ecg-svg" viewBox="0 0 600 80" preserveAspectRatio="none">
+            <path class="ecg-path" d="M0,40 L90,40 L105,40 L115,18 L125,62 L135,10 L145,55 L155,40 L170,40 L300,40 L315,40 L325,18 L335,62 L345,10 L355,55 L365,40 L380,40 L510,40 L525,40 L535,18 L545,62 L555,10 L565,55 L575,40 L600,40"
+              fill="none" stroke="#5eead4" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+
+          <div class="login-feats">
+            <div class="feat"><span class="feat-ico">📅</span><div><b>Agenda inteligente</b><span>Citas, cola de urgencias y telemedicina</span></div></div>
+            <div class="feat"><span class="feat-ico">📋</span><div><b>Historia clínica digital</b><span>SOAP, signos vitales y exámenes</span></div></div>
+            <div class="feat"><span class="feat-ico">💊</span><div><b>Recetas normativa MSP</b><span>PDF listo para firma y sello</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel derecho: formulario -->
+      <div class="login-right">
+        <div class="login-heart">🫀</div>
+        <h2 class="login-title">Bienvenido de nuevo</h2>
+        <p class="login-sub">Accede al panel médico de tu clínica</p>
+
+        <form id="loginForm" class="form">
+          <label>Email</label>
+          <div class="input-ico">
+            <span>✉️</span>
+            <input name="email" type="email" placeholder="admin@agx.local" required />
+          </div>
+          <label>Contraseña</label>
+          <div class="input-ico">
+            <span>🔒</span>
+            <input name="password" id="passInput" type="password" placeholder="••••••••" required />
+            <button type="button" class="pass-toggle" id="togglePass">👁️</button>
+          </div>
+          <button class="btn btn-primary btn-block btn-login" type="submit">
+            <span>Iniciar sesión</span>
+          </button>
+          <div class="muted center" id="loginMsg"></div>
+        </form>
+        <div class="login-hint">Demo: <b>admin@agx.local</b> / <b>Admin123!</b></div>
+        <div class="login-foot">🔐 Conexión segura · Datos protegidos</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="appShell" class="app-shell hidden">
+
+    <!-- Header -->
+    <header class="hero">
+      <div>
+        <div class="brand-chip">AGX Salud</div>
+        <h1 class="hero-title" id="heroTitle">Dashboard Médico</h1>
+        <p class="hero-sub" id="heroSub">Bienvenido</p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn btn-dark" id="btnLogout">Salir</button>
+        <button class="btn btn-outline" data-nav="agenda">Ver agenda</button>
+        <button class="btn btn-primary" data-nav="inmediata">Nueva atención</button>
+      </div>
+    </header>
+
+    <!-- Nav tabs -->
+    <nav class="tabs" id="tabs">
+      <button data-view="dashboard" class="tab is-active">Dashboard</button>
+      <button data-view="agenda" class="tab">Agenda</button>
+      <button data-view="pacientes" class="tab">Pacientes</button>
+      <button data-view="historia" class="tab">Historia clínica</button>
+      <button data-view="recetas" class="tab">Recetas</button>
+      <button data-view="inmediata" class="tab">Atención inmediata</button>
+      <button data-view="chat" class="tab">Chat</button>
+      <button data-view="ia" class="tab">IA triage</button>
+    </nav>
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section id="view-dashboard" class="view">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon icon-people">👥</div>
+            <span class="stat-badge" id="badgePatients"></span>
+          </div>
+          <div class="stat-label">Pacientes registrados</div>
+          <div class="stat-value" id="statPatients">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon icon-steth">🩺</div>
+            <span class="stat-badge" id="badgeToday"></span>
+          </div>
+          <div class="stat-label">Atención de hoy</div>
+          <div class="stat-value" id="statToday">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon icon-cal">📅</div>
+            <span class="stat-badge warn" id="badgePending"></span>
+          </div>
+          <div class="stat-label">Citas pendientes</div>
+          <div class="stat-value" id="statPending">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon icon-check">✅</div>
+            <span class="stat-badge" id="badgeSchedule">08:00 - 17:00</span>
+          </div>
+          <div class="stat-label">Disponibilidad</div>
+          <div class="stat-value">Activa</div>
+        </div>
+      </div>
+
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Agenda de hoy</h2>
+                <p class="card-sub">Consultas programadas para el día</p>
+              </div>
+              <button class="link" data-nav="agenda">Ver todas</button>
+            </div>
+            <div id="todayList" class="agenda-list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Pacientes recientes</h2>
+                <p class="card-sub">Últimas atenciones registradas</p>
+              </div>
+              <button class="link" data-nav="pacientes">Gestionar pacientes</button>
+            </div>
+            <div id="recentPatients"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Actividad de la semana</h2>
+                <p class="card-sub">Citas registradas en los últimos 7 días</p>
+              </div>
+              <span class="stat-badge" id="weekTotal"></span>
+            </div>
+            <div class="week-chart" id="weekChart"></div>
+          </div>
+        </div>
+
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Acciones rápidas</h2>
+            <p class="card-sub">Atajos operativos del sistema</p>
+            <div class="quick-grid">
+              <button class="quick" data-nav="agenda">
+                <div class="quick-icon qi-pink">📌</div>
+                <div><b>Nueva cita</b><span>Registrar atención o cita</span></div>
+              </button>
+              <button class="quick" data-nav="historia">
+                <div class="quick-icon qi-amber">📋</div>
+                <div><b>Historia clínica</b><span>Crear o editar historial</span></div>
+              </button>
+              <button class="quick" data-nav="recetas">
+                <div class="quick-icon qi-rose">💊</div>
+                <div><b>Receta médica</b><span>Emitir receta al paciente</span></div>
+              </button>
+              <button class="quick" data-nav="ia">
+                <div class="quick-icon qi-violet">🤖</div>
+                <div><b>IA triage</b><span>Clasificar urgencia</span></div>
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Tareas pendientes</h2>
+            <p class="card-sub">Actividades por completar</p>
+            <ul class="todo-list" id="todoList"></ul>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Disponibilidad</h2>
+            <p class="card-sub">Estado actual del médico</p>
+            <div class="avail">
+              <span class="dot"></span> <b>Disponible</b> · Horario 08:00 – 17:00
+            </div>
+          </div>
+
+          <div class="card tip-card" id="tipCard">
+            <div class="tip-icon" id="tipIcon">💧</div>
+            <h2 class="card-title" style="font-size:18px;">Consejo de salud</h2>
+            <p class="tip-text" id="tipText">Cargando…</p>
+            <div class="tip-dots" id="tipDots"></div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title" style="font-size:18px;">🧰 Herramientas clínicas</h2>
+            <p class="card-sub">Calculadoras médicas rápidas</p>
+
+            <div class="tool-tabs" id="toolTabs">
+              <button class="tool-tab is-on" data-tool="imc">⚖️ IMC</button>
+              <button class="tool-tab" data-tool="dosis">💊 Dosis</button>
+              <button class="tool-tab" data-tool="cardio">🫀 Cardio</button>
+              <button class="tool-tab" data-tool="presion">🩸 Presión</button>
+            </div>
+
+            <!-- IMC -->
+            <div class="tool-panel" id="tool-imc">
+              <div class="grid2">
+                <div><label class="imc-label">Peso (kg)</label><input id="imcPeso" class="imc-input" type="number" placeholder="70" min="1" /></div>
+                <div><label class="imc-label">Talla (cm)</label><input id="imcTalla" class="imc-input" type="number" placeholder="170" min="30" /></div>
+              </div>
+              <div class="imc-result hidden" id="imcResult">
+                <div class="imc-value" id="imcValue">—</div>
+                <div class="imc-cat" id="imcCat">—</div>
+                <div class="imc-scale">
+                  <div class="imc-seg s1"></div><div class="imc-seg s2"></div><div class="imc-seg s3"></div><div class="imc-seg s4"></div>
+                  <div class="imc-marker" id="imcMarker"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dosis pediátrica -->
+            <div class="tool-panel hidden" id="tool-dosis">
+              <div class="grid2">
+                <div><label class="imc-label">Peso niño (kg)</label><input id="dosPeso" class="imc-input" type="number" placeholder="15" min="0.5" step="0.1" /></div>
+                <div><label class="imc-label">Dosis (mg/kg/día)</label><input id="dosMgKg" class="imc-input" type="number" placeholder="50" min="0.1" step="0.1" /></div>
+              </div>
+              <label class="imc-label" style="margin-top:8px;display:block;">Tomas al día</label>
+              <input id="dosTomas" class="imc-input" type="number" placeholder="3" min="1" max="12" />
+              <div class="imc-result hidden" id="dosResult">
+                <div class="imc-value" id="dosValue">—</div>
+                <div class="imc-cat" id="dosCat">mg por toma</div>
+                <div class="muted" id="dosTotal"></div>
+              </div>
+            </div>
+
+            <!-- Zonas cardiacas -->
+            <div class="tool-panel hidden" id="tool-cardio">
+              <label class="imc-label">Edad del paciente</label>
+              <input id="carEdad" class="imc-input" type="number" placeholder="35" min="1" max="120" />
+              <div class="imc-result hidden" id="carResult">
+                <div class="imc-value" id="carMax">—</div>
+                <div class="imc-cat">FC máxima (lpm)</div>
+                <div class="zonas">
+                  <div class="zona z1"><b id="carZ1">—</b><span>Moderada 50–70%</span></div>
+                  <div class="zona z2"><b id="carZ2">—</b><span>Intensa 70–85%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Presión arterial -->
+            <div class="tool-panel hidden" id="tool-presion">
+              <div class="grid2">
+                <div><label class="imc-label">Sistólica</label><input id="paSys" class="imc-input" type="number" placeholder="120" min="40" /></div>
+                <div><label class="imc-label">Diastólica</label><input id="paDia" class="imc-input" type="number" placeholder="80" min="20" /></div>
+              </div>
+              <div class="imc-result hidden" id="paResult">
+                <div class="imc-value" id="paValue">—</div>
+                <div class="imc-cat" id="paCat">—</div>
+                <div class="muted" id="paNote"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== AGENDA ==================== -->
+    <section id="view-agenda" class="view hidden">
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Citas</h2>
+                <p class="card-sub">Crear, confirmar y cambiar estados</p>
+              </div>
+            </div>
+            <div id="apptTable"></div>
+          </div>
+        </div>
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Nueva cita</h2>
+            <p class="card-sub">Selecciona paciente y fecha</p>
+            <form class="form" id="apptForm">
+              <label>Paciente</label>
+              <select id="apptPatient" required></select>
+              <label>Tipo</label>
+              <select id="apptType">
+                <option value="in_person">Presencial</option>
+                <option value="virtual">Virtual</option>
+              </select>
+              <label>Motivo</label>
+              <input id="apptReason" placeholder="Ej: Control general" />
+              <label>Inicio</label>
+              <input id="apptStart" type="datetime-local" required />
+              <label>Fin</label>
+              <input id="apptEnd" type="datetime-local" required />
+              <button class="btn btn-primary btn-block" type="submit">Crear cita</button>
+              <div class="muted" id="apptMsg"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PACIENTES ==================== -->
+    <section id="view-pacientes" class="view hidden">
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Pacientes</h2>
+                <p class="card-sub">Búsqueda y gestión</p>
+              </div>
+            </div>
+            <input id="patientSearch" class="search" placeholder="🔍 Buscar por nombre, cédula, teléfono…" />
+            <div id="patientsTable"></div>
+          </div>
+        </div>
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Nuevo paciente</h2>
+            <p class="card-sub">Datos básicos + antecedentes</p>
+            <form class="form" id="patientForm">
+              <div class="grid2">
+                <div><label>Nombres</label><input id="pFirst" required placeholder="Juan" /></div>
+                <div><label>Apellidos</label><input id="pLast" required placeholder="Pérez" /></div>
+              </div>
+              <div class="grid2">
+                <div><label>Cédula</label><input id="pIdNum" placeholder="0912345678" /></div>
+                <div><label>Teléfono</label><input id="pPhone" placeholder="+593..." /></div>
+              </div>
+              <label>Email</label>
+              <input id="pEmail" type="email" placeholder="correo@..." />
+              <div class="grid2">
+                <div><label>Nacimiento</label><input id="pBirth" type="date" /></div>
+                <div><label>Sexo</label>
+                  <select id="pSex">
+                    <option value="">—</option>
+                    <option value="male">Masculino</option>
+                    <option value="female">Femenino</option>
+                    <option value="other">Otro</option>
+                  </select>
+                </div>
+              </div>
+              <label>Alergias</label><input id="pAllergies" placeholder="Ej: Penicilina" />
+              <label>Condiciones</label><input id="pConditions" placeholder="Ej: Hipertensión" />
+              <label>Notas</label><textarea id="pNotes" placeholder="Observaciones"></textarea>
+              <button class="btn btn-primary btn-block" type="submit">Guardar paciente</button>
+              <div class="muted" id="patientMsg"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HISTORIA CLÍNICA ==================== -->
+    <section id="view-historia" class="view hidden">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Historia clínica</h2>
+            <p class="card-sub">Selecciona un paciente para ver y editar su historial</p>
+          </div>
+          <select id="hcPatient" class="select-lg"></select>
+        </div>
+      </div>
+
+      <div id="hcContent" class="hidden">
+        <div class="main-grid">
+          <div class="col-main">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title" id="hcName">—</h2>
+                  <p class="card-sub">Ficha del paciente</p>
+                </div>
+                <button class="btn btn-outline btn-sm" id="hcEditBtn">✏️ Editar ficha</button>
+              </div>
+              <div class="kv-grid" id="hcInfo"></div>
+
+              <form class="form hidden" id="hcEditForm" style="margin-top:16px;">
+                <div class="grid2">
+                  <div><label>Nombres</label><input id="eFirst" required /></div>
+                  <div><label>Apellidos</label><input id="eLast" required /></div>
+                </div>
+                <div class="grid2">
+                  <div><label>Cédula</label><input id="eIdNum" placeholder="0912345678" /></div>
+                  <div><label>Teléfono</label><input id="ePhone" /></div>
+                </div>
+                <label>Email</label>
+                <input id="eEmail" type="email" />
+                <div class="grid2">
+                  <div><label>Nacimiento</label><input id="eBirth" type="date" /></div>
+                  <div><label>Sexo</label>
+                    <select id="eSex">
+                      <option value="">—</option>
+                      <option value="male">Masculino</option>
+                      <option value="female">Femenino</option>
+                      <option value="other">Otro</option>
+                    </select>
+                  </div>
+                </div>
+                <label>Alergias</label><input id="eAllergies" />
+                <label>Condiciones</label><input id="eConditions" />
+                <label>Notas</label><textarea id="eNotes"></textarea>
+                <div class="grid2">
+                  <button class="btn btn-primary" type="submit">Guardar cambios</button>
+                  <button class="btn btn-outline" type="button" id="hcEditCancel">Cancelar</button>
+                </div>
+                <div class="muted" id="hcEditMsg"></div>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">Notas clínicas (SOAP)</h2>
+                  <p class="card-sub">Por cita — clic en una cita para editar su nota</p>
+                </div>
+              </div>
+              <div id="hcAppointments"></div>
+            </div>
+
+            <div class="card hidden" id="soapCard">
+              <h2 class="card-title">Nota SOAP — <span id="soapApptLabel"></span></h2>
+              <form class="form" id="soapForm">
+                <label>Subjetivo (lo que refiere el paciente)</label>
+                <textarea id="soapS"></textarea>
+                <label>Objetivo (hallazgos / examen físico)</label>
+                <textarea id="soapO"></textarea>
+                <label>Evaluación</label>
+                <textarea id="soapA"></textarea>
+                <label>Plan</label>
+                <textarea id="soapP"></textarea>
+                <div class="grid2">
+                  <button class="btn btn-primary" type="submit">Guardar nota</button>
+                  <button class="btn btn-outline" type="button" id="soapCancel">Cerrar</button>
+                </div>
+                <div class="muted" id="soapMsg"></div>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-side">
+            <div class="card">
+              <h2 class="card-title">Signos vitales</h2>
+              <p class="card-sub">Registrar medición</p>
+              <form class="form" id="vitalsForm">
+                <div class="grid2">
+                  <div><label>Sistólica</label><input id="vSys" type="number" placeholder="120" /></div>
+                  <div><label>Diastólica</label><input id="vDia" type="number" placeholder="80" /></div>
+                </div>
+                <div class="grid2">
+                  <div><label>Pulso</label><input id="vHr" type="number" placeholder="70" /></div>
+                  <div><label>SpO2 %</label><input id="vSpo2" type="number" placeholder="98" /></div>
+                </div>
+                <div class="grid2">
+                  <div><label>Temp °C</label><input id="vTemp" type="number" step="0.1" placeholder="36.6" /></div>
+                  <div><label>Peso kg</label><input id="vWeight" type="number" step="0.1" placeholder="70" /></div>
+                </div>
+                <label>Glucosa mg/dl</label><input id="vGluc" type="number" placeholder="90" />
+                <button class="btn btn-primary btn-block" type="submit">Guardar signos</button>
+                <div class="muted" id="vitalsMsg"></div>
+              </form>
+            </div>
+            <div class="card">
+              <h2 class="card-title">Historial de signos</h2>
+              <div id="vitalsHistory"></div>
+            </div>
+            <div class="card">
+              <h2 class="card-title">Exámenes y archivos</h2>
+              <p class="card-sub">Subidos en consultas</p>
+              <div id="hcFiles"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== RECETAS ==================== -->
+    <section id="view-recetas" class="view hidden">
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Recetas emitidas</h2>
+                <p class="card-sub">Historial — clic en PDF para imprimir</p>
+              </div>
+            </div>
+            <div id="rxTable"></div>
+          </div>
+        </div>
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Nueva receta</h2>
+            <p class="card-sub">Emitir receta al paciente</p>
+            <form class="form" id="rxForm">
+              <label>Paciente</label>
+              <select id="rxPatient" required></select>
+              <label>Cita asociada</label>
+              <select id="rxAppt" required></select>
+              <div id="rxItems">
+                <div class="rx-item">
+                  <label>Medicamento</label>
+                  <input class="rxMed" placeholder="Paracetamol 500mg" required />
+                  <div class="grid2">
+                    <div><label>Dosis</label><input class="rxDose" placeholder="1 tableta" /></div>
+                    <div><label>Frecuencia</label><input class="rxFreq" placeholder="cada 8 horas" /></div>
+                  </div>
+                  <label>Duración</label>
+                  <input class="rxDur" placeholder="5 días" />
+                </div>
+              </div>
+              <button class="btn btn-outline btn-block" type="button" id="rxAddItem">+ Agregar medicamento</button>
+              <label>Indicaciones generales</label>
+              <textarea id="rxInstructions" placeholder="Tomar con alimentos…"></textarea>
+              <button class="btn btn-primary btn-block" type="submit">Emitir receta</button>
+              <div class="muted" id="rxMsg"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CONSULTA MÉDICA ==================== -->
+    <section id="view-consulta" class="view hidden">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title" id="cName">Consulta médica</h2>
+            <p class="card-sub" id="cSub">—</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-outline" id="cBack">← Volver</button>
+            <button class="btn btn-primary" id="cFinish">✓ Finalizar consulta</button>
+          </div>
+        </div>
+        <div class="kv-grid" id="cInfo"></div>
+      </div>
+
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <h2 class="card-title">Nota clínica (SOAP)</h2>
+            <p class="card-sub">Registro de la consulta</p>
+            <form class="form" id="cSoapForm">
+              <label>Subjetivo (lo que refiere el paciente)</label>
+              <textarea id="cSoapS"></textarea>
+              <label>Objetivo (hallazgos / examen físico)</label>
+              <textarea id="cSoapO"></textarea>
+              <label>Evaluación</label>
+              <textarea id="cSoapA"></textarea>
+              <label>Plan</label>
+              <textarea id="cSoapP"></textarea>
+              <button class="btn btn-primary" type="submit">Guardar nota</button>
+              <div class="muted" id="cSoapMsg"></div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Exámenes y archivos</h2>
+                <p class="card-sub">Sube laboratorio, imágenes o PDFs (máx 10 MB)</p>
+              </div>
+            </div>
+            <form class="form" id="cFileForm">
+              <div class="grid2">
+                <div>
+                  <label>Archivo (PDF, JPG, PNG)</label>
+                  <input id="cFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
+                </div>
+                <div>
+                  <label>Categoría</label>
+                  <select id="cFileCat">
+                    <option value="exam">Examen / Laboratorio</option>
+                    <option value="image">Imagen médica</option>
+                    <option value="report">Informe</option>
+                    <option value="other">Otro</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">⬆ Subir archivo</button>
+              <div class="muted" id="cFileMsg"></div>
+            </form>
+            <div id="cFilesList" style="margin-top:14px;"></div>
+          </div>
+        </div>
+
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Signos vitales</h2>
+            <p class="card-sub">Medición durante la consulta</p>
+            <form class="form" id="cVitalsForm">
+              <div class="grid2">
+                <div><label>Sistólica</label><input id="cvSys" type="number" placeholder="120" /></div>
+                <div><label>Diastólica</label><input id="cvDia" type="number" placeholder="80" /></div>
+              </div>
+              <div class="grid2">
+                <div><label>Pulso</label><input id="cvHr" type="number" placeholder="70" /></div>
+                <div><label>SpO2 %</label><input id="cvSpo2" type="number" placeholder="98" /></div>
+              </div>
+              <div class="grid2">
+                <div><label>Temp °C</label><input id="cvTemp" type="number" step="0.1" placeholder="36.6" /></div>
+                <div><label>Peso kg</label><input id="cvWeight" type="number" step="0.1" placeholder="70" /></div>
+              </div>
+              <label>Glucosa mg/dl</label><input id="cvGluc" type="number" placeholder="90" />
+              <button class="btn btn-primary btn-block" type="submit">Guardar signos</button>
+              <div class="muted" id="cVitalsMsg"></div>
+            </form>
+            <div id="cVitalsLast" style="margin-top:12px;"></div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Receta médica</h2>
+            <p class="card-sub">Emitir receta de esta consulta</p>
+            <button class="btn btn-primary btn-block" id="cGoRx">💊 Crear receta</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ATENCIÓN INMEDIATA ==================== -->
+    <section id="view-inmediata" class="view hidden">
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Cola de atención inmediata</h2>
+                <p class="card-sub">Pacientes en espera y en atención</p>
+              </div>
+            </div>
+            <div id="queueTable"></div>
+          </div>
+        </div>
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Nueva atención</h2>
+            <p class="card-sub">Walk-in / emergente</p>
+            <form class="form" id="walkinForm">
+              <label>Paciente</label>
+              <select id="walkinPatient" required></select>
+              <label>Motivo</label>
+              <input id="walkinReason" placeholder="Ej: dolor intenso" />
+              <label>Tipo</label>
+              <select id="walkinType">
+                <option value="in_person">Presencial</option>
+                <option value="virtual">Virtual</option>
+              </select>
+              <button class="btn btn-primary btn-block" type="submit">Agregar a cola</button>
+              <div class="muted" id="walkinMsg"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CHAT ==================== -->
+    <section id="view-chat" class="view hidden">
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Selecciona cita</h2>
+                <p class="card-sub">El chat es privado por cita</p>
+              </div>
+            </div>
+            <div id="chatApptTable"></div>
+          </div>
+        </div>
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Chat</h2>
+            <p class="card-sub" id="chatSub">Sin hilo seleccionado</p>
+            <div class="chat">
+              <div class="chat-log" id="chatLog"></div>
+              <form class="chat-form" id="chatForm">
+                <input id="chatInput" placeholder="Escribe un mensaje…" />
+                <button class="btn btn-primary" type="submit">Enviar</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== IA ==================== -->
+    <section id="view-ia" class="view hidden">
+      <div class="card">
+        <h2 class="card-title">IA — Triage (solo sugerencias)</h2>
+        <p class="card-sub">No reemplaza diagnóstico médico. Clasifica urgencia y sugiere especialidad.</p>
+        <form class="form" id="aiForm">
+          <label>Mensaje del paciente</label>
+          <textarea id="aiMessage" placeholder="Describe síntomas, tiempo de evolución…"></textarea>
+          <button class="btn btn-primary" type="submit">Analizar</button>
+          <div class="muted" id="aiMsg"></div>
+        </form>
+        <div class="answer" id="aiAnswer"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Decoraciones laterales de salud (pantallas anchas) -->
+  <div class="side-deco deco-left" aria-hidden="true">
+    <span class="sd si1">✚</span>
+    <span class="sd si2">🩺</span>
+    <span class="sd si3">💊</span>
+    <span class="sd si4">🧬</span>
+    <span class="sd si5">✚</span>
+  </div>
+  <div class="side-deco deco-right" aria-hidden="true">
+    <span class="sd si2">❤️</span>
+    <span class="sd si4">✚</span>
+    <span class="sd si1">🌡️</span>
+    <span class="sd si3">🫀</span>
+    <span class="sd si5">💉</span>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
