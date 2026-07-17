@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../utils.js";
 
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization || "";
@@ -6,7 +7,7 @@ export function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ error: "missing_token" });
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload; // { userId, clinicId, role, name }
     next();
   } catch {

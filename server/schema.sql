@@ -131,5 +131,19 @@ CREATE TABLE IF NOT EXISTS reminders (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Archivos adjuntos (exámenes, laboratorio, imágenes)
+CREATE TABLE IF NOT EXISTS attachments (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clinic_id      UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
+  patient_id     UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+  appointment_id UUID REFERENCES appointments(id) ON DELETE CASCADE,
+  file_name      TEXT NOT NULL,
+  original_name  TEXT NOT NULL,
+  mime           TEXT,
+  size_bytes     BIGINT,
+  category       TEXT NOT NULL DEFAULT 'exam',
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Helpful extensions
 CREATE EXTENSION IF NOT EXISTS pgcrypto;

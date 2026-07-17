@@ -1,19 +1,20 @@
 import express from "express";
 import { requireAuth } from "../middleware/auth.js";
 import { getOpenAIClient } from "../ai/openai.js";
+import { ah } from "../utils.js";
 
 const router = express.Router();
 router.use(requireAuth);
 
+const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+
 /**
  * IMPORTANTE (salud):
- * - Esto NO es diagnóstico.
- * - Solo clasifica y sugiere.
- * - En producción: agrega disclaimers, logging, control de acceso y filtros.
+ * - Esto NO es diagnóstico. Solo clasifica y sugiere.
  */
-router.post("/triage", async (req, res) => {
-  const { message } = req.body || {};
-  if (!message || String(message).trim().length < 8) return res.status(400).json({ error: "message_too_short" });
+router.post("/triage", ah(async (req, res) => {
+  const message = String(req.body?.message ?? "").trim().slice(0, 4000);
+  if (message.length < 8) return res.status(400).json({ error: "message_too_short" });
 
   const client = getOpenAIClient();
   if (!client) {
@@ -23,45 +24,43 @@ router.post("/triage", async (req, res) => {
     });
   }
 
-  const input = [
-    {
-      role: "system",
-      content:
-        "Eres un asistente de triage para una clínica. NO diagnostiques. Clasifica urgencia (baja/media/alta), sugiere especialidad y sugiere preguntas de aclaración. Responde en español, breve y estructurado."
-    },
-    { role: "user", content: `Mensaje del paciente: ${message}` }
-  ];
-
-  const r = await client.responses.create({
-    model: "gpt-5.2",
-    input
+  const r = await client.chat.completions.create({
+    model: MODEL,
+    max_tokens: 500,
+    messages: [
+      {
+        role: "system",
+        content:
+          "Eres un asistente de triage para una clínica. NO diagnostiques. Clasifica urgencia (baja/media/alta), sugiere especialidad y sugiere preguntas de aclaración. Termina siempre indicando que esto no reemplaza una evaluación médica. Responde en español, breve y estructurado."
+      },
+      { role: "user", content: `Mensaje del paciente: ${message}` }
+    ]
   });
 
-  res.json({ reply: r.output_text });
-});
+  res.json({ reply: r.choices[0]?.message?.content ?? "" });
+}));
 
-router.post("/summary", async (req, res) => {
-  const { notes } = req.body || {};
-  if (!notes || String(notes).trim().length < 20) return res.status(400).json({ error: "notes_too_short" });
+router.post("/summary", ah(async (req, res) => {
+  const notes = String(req.body?.notes ?? "").trim().slice(0, 8000);
+  if (notes.length < 20) return res.status(400).json({ error: "notes_too_short" });
 
   const client = getOpenAIClient();
   if (!client) return res.json({ reply: "IA no configurada (OPENAI_API_KEY)." });
 
-  const input = [
-    {
-      role: "system",
-      content:
-        "Eres un asistente clínico que resume texto en formato SOAP (Subjetivo, Objetivo, Evaluación, Plan). No inventes datos. Responde en español."
-    },
-    { role: "user", content: notes }
-  ];
-
-  const r = await client.responses.create({
-    model: "gpt-5.2",
-    input
+  const r = await client.chat.completions.create({
+    model: MODEL,
+    max_tokens: 700,
+    messages: [
+      {
+        role: "system",
+        content:
+          "Eres un asistente clínico que resume texto en formato SOAP (Subjetivo, Objetivo, Evaluación, Plan). No inventes datos. Responde en español."
+      },
+      { role: "user", content: notes }
+    ]
   });
 
-  res.json({ reply: r.output_text });
-});
+  res.json({ reply: r.choices[0]?.message?.content ?? "" });
+}));
 
 export default router;
