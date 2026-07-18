@@ -156,10 +156,10 @@ async function loadSuperPanel(){
         <thead><tr><th>Consultorio</th><th>Usuarios</th><th>Pacientes</th><th>Creado</th><th></th></tr></thead>
         <tbody>${clinics.map(c => `
           <tr>
-            <td><b>${escapeHtml(c.name)}</b></td>
-            <td>${c.users_count}</td>
-            <td>${c.patients_count}</td>
-            <td>${fmtDay(c.created_at)}</td>
+            <td data-label="Consultorio"><b>${escapeHtml(c.name)}</b></td>
+            <td data-label="Usuarios">${c.users_count}</td>
+            <td data-label="Pacientes">${c.patients_count}</td>
+            <td data-label="Creado">${fmtDay(c.created_at)}</td>
             <td>${c.id !== CLINIC?.id
               ? `<button class="btn btn-outline btn-sm" data-delclinic="${c.id}" data-clinicname="${escapeHtml(c.name)}">Eliminar</button>`
               : `<span class="pill info">el tuyo</span>`}</td>
@@ -211,9 +211,9 @@ async function loadUsers(){
         <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th></th></tr></thead>
         <tbody>${users.map(u => `
           <tr>
-            <td><b>${escapeHtml(u.full_name)}</b></td>
-            <td>${escapeHtml(u.email)}</td>
-            <td>${pillRole(u.role, roleMap)}</td>
+            <td data-label="Nombre"><b>${escapeHtml(u.full_name)}</b></td>
+            <td data-label="Email">${escapeHtml(u.email)}</td>
+            <td data-label="Rol">${pillRole(u.role, roleMap)}</td>
             <td>${u.id !== me?.id ? `<button class="btn btn-outline btn-sm" data-deluser="${u.id}">Eliminar</button>` : `<span class="muted">tú</span>`}</td>
           </tr>`).join("")}
         </tbody>
@@ -312,10 +312,10 @@ function renderDashboard(){
       <thead><tr><th>Paciente</th><th>Contacto</th><th>Antecedentes</th><th>Registro</th></tr></thead>
       <tbody>${recent.map(p => `
         <tr>
-          <td><b>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</b></td>
-          <td>${escapeHtml(p.phone || "—")}</td>
-          <td>${escapeHtml(p.conditions || "—")}</td>
-          <td>${fmtDay(p.created_at)}</td>
+          <td data-label="Paciente"><b>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</b></td>
+          <td data-label="Contacto">${escapeHtml(p.phone || "—")}</td>
+          <td data-label="Antecedentes">${escapeHtml(p.conditions || "—")}</td>
+          <td data-label="Registro">${fmtDay(p.created_at)}</td>
         </tr>`).join("")}
       </tbody>
     </table>` : `<div class="empty">Sin pacientes aún</div>`;
@@ -527,11 +527,11 @@ function renderAgenda(){
       <thead><tr><th>Paciente</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody>${APPTS.map(a => `
         <tr>
-          <td><b>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</b><div class="muted">${escapeHtml(a.reason || "")}</div></td>
-          <td>${fmtDate(a.starts_at)}</td>
-          <td>${a.type === "virtual" ? "Virtual" : "Presencial"}</td>
-          <td>${pill(a.status)}</td>
-          <td>${apptActions(a)}</td>
+          <td data-label="Paciente"><b>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</b><div class="muted">${escapeHtml(a.reason || "")}</div></td>
+          <td data-label="Fecha">${fmtDate(a.starts_at)}</td>
+          <td data-label="Tipo">${a.type === "virtual" ? "Virtual" : "Presencial"}</td>
+          <td data-label="Estado">${pill(a.status)}</td>
+          <td data-label="Acciones">${apptActions(a)}</td>
         </tr>`).join("")}
       </tbody>
     </table>` : `<div class="empty">Sin citas registradas</div>`;
@@ -808,9 +808,9 @@ function renderPatients(list){
       <thead><tr><th>Paciente</th><th>Contacto</th><th>Antecedentes</th><th>Acciones</th></tr></thead>
       <tbody>${list.map(p => `
         <tr>
-          <td><b>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</b><div class="muted">${escapeHtml(p.id_number || "")}</div></td>
-          <td>${escapeHtml(p.phone || "—")}<div class="muted">${escapeHtml(p.email || "")}</div></td>
-          <td class="muted">${escapeHtml(p.allergies || "—")} · ${escapeHtml(p.conditions || "—")}</td>
+          <td data-label="Paciente"><b>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</b><div class="muted">${escapeHtml(p.id_number || "")}</div></td>
+          <td data-label="Contacto">${escapeHtml(p.phone || "—")}<div class="muted">${escapeHtml(p.email || "")}</div></td>
+          <td data-label="Antecedentes" class="muted">${escapeHtml(p.allergies || "—")} · ${escapeHtml(p.conditions || "—")}</td>
           <td><div class="row-actions">
             <button class="btn btn-outline btn-sm" data-hc="${p.id}">Historia</button>
             ${isAdmin ? `<button class="btn btn-outline btn-sm" data-del="${p.id}">Eliminar</button>` : ""}
@@ -1051,9 +1051,9 @@ async function loadPrescriptions(){
         <thead><tr><th>Paciente</th><th>Fecha</th><th>Indicaciones</th><th></th></tr></thead>
         <tbody>${list.map(r => `
           <tr>
-            <td><b>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</b></td>
-            <td>${fmtDate(r.created_at)}</td>
-            <td class="muted">${escapeHtml((r.instructions || "—").slice(0, 60))}</td>
+            <td data-label="Paciente"><b>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</b></td>
+            <td data-label="Fecha">${fmtDate(r.created_at)}</td>
+            <td data-label="Indicaciones" class="muted">${escapeHtml((r.instructions || "—").slice(0, 60))}</td>
             <td><button class="btn btn-primary btn-sm" data-pdf="${r.id}">📄 PDF</button></td>
           </tr>`).join("")}
         </tbody>
@@ -1140,10 +1140,10 @@ function renderQueue(){
       <thead><tr><th>Paciente</th><th>Llegada</th><th>Motivo</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody>${QUEUE.map(a => `
         <tr>
-          <td><b>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</b></td>
-          <td>${fmtTime(a.created_at)}</td>
-          <td class="muted">${escapeHtml(a.reason || "—")}</td>
-          <td>${pill(a.status)}</td>
+          <td data-label="Paciente"><b>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</b></td>
+          <td data-label="Llegada">${fmtTime(a.created_at)}</td>
+          <td data-label="Motivo" class="muted">${escapeHtml(a.reason || "—")}</td>
+          <td data-label="Estado">${pill(a.status)}</td>
           <td><div class="row-actions">
             ${a.status === "waiting" ? `<button class="btn btn-primary btn-sm" data-atender="${a.id}">Atender</button>` : ""}
             ${a.status === "in_progress" ? `<button class="btn btn-primary btn-sm" data-atender="${a.id}">Consulta</button>` : ""}
