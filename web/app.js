@@ -106,6 +106,44 @@ $("#loginForm").addEventListener("submit", async (e)=>{
 });
 $("#btnLogout").addEventListener("click", showLogin);
 
+/* --- registro de nuevo consultorio --- */
+$("#toggleReg")?.addEventListener("click", ()=>{
+  const showingReg = !$("#regForm").classList.contains("hidden");
+  $("#regForm").classList.toggle("hidden", showingReg);
+  $("#loginForm").classList.toggle("hidden", !showingReg);
+  $("#toggleReg").textContent = showingReg ? "¿Nuevo consultorio? Créalo aquí" : "← Volver a iniciar sesión";
+});
+
+$("#regForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const msg = $("#regMsg");
+  msg.textContent = "Creando consultorio…";
+  try{
+    const res = await fetch(`${API}/auth/register`, {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        clinicName: $("#regClinic").value.trim(),
+        fullName: $("#regName").value.trim(),
+        email: $("#regEmail").value.trim(),
+        password: $("#regPass").value,
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "error");
+    token = data.token; me = data.user;
+    localStorage.setItem("agx_token", token);
+    localStorage.setItem("agx_me", JSON.stringify(me));
+    msg.textContent = "";
+    showApp();
+    setView("dashboard");
+    await loadAll();
+  }catch(err){
+    msg.textContent = String(err.message) === "email_in_use"
+      ? "Ese email ya está registrado."
+      : "No se pudo crear (contraseña mínimo 8 caracteres).";
+  }
+});
+
 /* ================= data load ================= */
 async function loadAll(){
   [PATIENTS, APPTS, QUEUE] = await Promise.all([
@@ -120,7 +158,94 @@ async function loadAll(){
   renderChatAppts();
   fillPatientSelects();
   await loadPrescriptions();
+  await loadClinicConfig();
 }
+
+/* ================= configuración del consultorio ================= */
+let CLINIC = null;
+
+async function loadClinicConfig(){
+  try{
+    CLINIC = await api("/clinic");
+    $("#clinicChip").textContent = CLINIC.name || "AGX Salud";
+    $("#clinicName").value = CLINIC.name || "";
+  }catch{}
+  $("#meName") && ($("#meName").textContent = me?.name || "—");
+  $("#meRole") && ($("#meRole").textContent = ({admin:"Administrador",provider:"Médico",staff:"Personal"})[me?.role] || me?.role || "—");
+
+  const isAdmin = me?.role === "admin";
+  $("#usersCard")?.classList.toggle("hidden", !isAdmin);
+  $("#newUserCard")?.classList.toggle("hidden", !isAdmin);
+  $("#clinicForm").querySelector("button").disabled = !isAdmin;
+  if (isAdmin) await loadUsers();
+}
+
+async function loadUsers(){
+  try{
+    const users = await api("/clinic/users");
+    const roleMap = { admin:"Administrador", provider:"Médico", staff:"Personal" };
+    $("#usersTable").innerHTML = `
+      <table class="tbl">
+        <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th></th></tr></thead>
+        <tbody>${users.map(u => `
+          <tr>
+            <td><b>${escapeHtml(u.full_name)}</b></td>
+            <td>${escapeHtml(u.email)}</td>
+            <td>${pillRole(u.role, roleMap)}</td>
+            <td>${u.id !== me?.id ? `<button class="btn btn-outline btn-sm" data-deluser="${u.id}">Eliminar</button>` : `<span class="muted">tú</span>`}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  }catch{
+    $("#usersTable").innerHTML = `<div class="empty">No se pudieron cargar los usuarios</div>`;
+  }
+}
+
+function pillRole(role, map){
+  const cls = { admin:"info", provider:"ok", staff:"wait" }[role] || "info";
+  return `<span class="pill ${cls}">${map[role] || role}</span>`;
+}
+
+$("#clinicForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const msg = $("#clinicMsg");
+  msg.textContent = "Guardando…";
+  try{
+    const r = await api("/clinic", { method:"PUT", body: JSON.stringify({ name: $("#clinicName").value.trim() }) });
+    CLINIC = r;
+    $("#clinicChip").textContent = r.name;
+    msg.textContent = "Nombre actualizado ✅ (saldrá en los nuevos PDF)";
+  }catch{ msg.textContent = "No se pudo guardar (solo administradores)."; }
+});
+
+$("#userForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const msg = $("#userMsg");
+  msg.textContent = "Creando…";
+  try{
+    await api("/clinic/users", { method:"POST", body: JSON.stringify({
+      full_name: $("#uName").value.trim(),
+      email: $("#uEmail").value.trim(),
+      password: $("#uPass").value,
+      role: $("#uRole").value,
+    })});
+    msg.textContent = "Usuario creado ✅";
+    e.target.reset();
+    await loadUsers();
+  }catch(err){
+    msg.textContent = String(err.message).includes("email_in_use")
+      ? "Ese email ya está registrado."
+      : "No se pudo crear (revisa email y contraseña de 8+ caracteres).";
+  }
+});
+
+$("#usersTable")?.addEventListener("click", async (e)=>{
+  const b = e.target.closest("button[data-deluser]");
+  if (!b) return;
+  if (!confirm("¿Eliminar este usuario? Ya no podrá iniciar sesión.")) return;
+  try{ await api(`/clinic/users/${b.dataset.deluser}`, { method:"DELETE" }); await loadUsers(); }
+  catch{ alert("No se pudo eliminar."); }
+});
 
 function fillPatientSelects(){
   const opts = PATIENTS.map(p => `<option value="${p.id}">${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</option>`).join("");
