@@ -21,6 +21,7 @@ import vitalsRoutes from "./routes/vitals.js";
 import prescriptionsRoutes from "./routes/prescriptions.js";
 import encountersRoutes from "./routes/encounters.js";
 import filesRoutes from "./routes/files.js";
+import certificatesRoutes from "./routes/certificates.js";
 import chatRoutes from "./routes/chat.js";
 import aiRoutes from "./routes/ai.js";
 
@@ -78,6 +79,7 @@ app.use("/api/vitals", vitalsRoutes);
 app.use("/api/prescriptions", prescriptionsRoutes);
 app.use("/api/encounters", encountersRoutes);
 app.use("/api/files", filesRoutes);
+app.use("/api/certificates", certificatesRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/ai", aiLimiter, aiRoutes);
 

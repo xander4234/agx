@@ -65,7 +65,6 @@
           </button>
           <div class="muted center" id="loginMsg"></div>
         </form>
-        <div class="login-hint">Demo: <b>admin@agx.local</b> / <b>Admin123!</b></div>
         <div class="login-foot">🔐 Conexión segura · Datos protegidos</div>
       </div>
 
@@ -647,6 +646,21 @@
             <h2 class="card-title">Receta médica</h2>
             <p class="card-sub">Emitir receta de esta consulta</p>
             <button class="btn btn-primary btn-block" id="cGoRx">💊 Crear receta</button>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">📜 Certificado médico</h2>
+            <p class="card-sub">Reposo y constancia de atención</p>
+            <form class="form" id="cCertForm">
+              <label>Días de reposo (0 si es solo constancia)</label>
+              <input id="certDias" type="number" min="0" max="365" placeholder="3" />
+              <label>Diagnóstico (vacío = usa el de la nota SOAP)</label>
+              <input id="certDx" placeholder="Ej: Faringitis aguda" />
+              <label>Observaciones (opcional)</label>
+              <textarea id="certObs" placeholder="Ej: Control en 72 horas…"></textarea>
+              <button class="btn btn-primary btn-block" type="submit">📜 Emitir certificado PDF</button>
+              <div class="muted" id="certMsg"></div>
+            </form>
           </div>
         </div>
       </div>

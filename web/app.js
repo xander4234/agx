@@ -562,6 +562,29 @@ $("#cFinish").addEventListener("click", async ()=>{
   }catch{ alert("No se pudo finalizar."); }
 });
 
+$("#cCertForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if (!consultaAppt) return;
+  const msg = $("#certMsg");
+  msg.textContent = "Emitiendo…";
+  try{
+    const cert = await api("/certificates", { method:"POST", body: JSON.stringify({
+      appointment_id: consultaAppt.id,
+      rest_days: Number($("#certDias").value) || 0,
+      diagnosis: $("#certDx").value.trim() || null,
+      observations: $("#certObs").value.trim() || null,
+    })});
+    msg.textContent = "Certificado emitido ✅";
+    e.target.reset();
+    const res = await fetch(`${API}/certificates/${cert.id}/pdf`, { headers:{ Authorization:`Bearer ${token}` } });
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank", "noopener");
+    setTimeout(()=> URL.revokeObjectURL(url), 60_000);
+  }catch{ msg.textContent = "No se pudo emitir (requiere rol médico/admin)."; }
+});
+
 $("#cGoRx").addEventListener("click", async ()=>{
   if (!consultaAppt) return;
   setView("recetas");

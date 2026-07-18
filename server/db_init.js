@@ -36,6 +36,16 @@ async function main() {
     );
   }
 
+  // 2b) usuario angel (admin) — angel@agx.local / Xander123
+  const angelEmail = "angel@agx.local";
+  const angelExisting = await q("SELECT id FROM users WHERE email=$1", [angelEmail]);
+  if (!angelExisting.rows.length) {
+    await q(
+      "INSERT INTO users(clinic_id, full_name, email, password_hash, role) VALUES($1,$2,$3,$4,$5)",
+      [clinicId, "Angel Alcivar", angelEmail, "$2a$10$wXXPuylwtUeTQ6gGT4WNa.A1EQ1N1E6PLf2KQ/wd9Yv/9BD6u5Ofq", "admin"]
+    );
+  }
+
   // 3) seed a patient + appointment if none
   const pat = await q("SELECT id FROM patients WHERE clinic_id=$1 LIMIT 1", [clinicId]);
   if (!pat.rows.length) {
