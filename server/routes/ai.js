@@ -31,7 +31,7 @@ router.post("/triage", ah(async (req, res) => {
       {
         role: "system",
         content:
-          "Eres un asistente de triage para una clínica. NO diagnostiques. Clasifica urgencia (baja/media/alta), sugiere especialidad y sugiere preguntas de aclaración. Termina siempre indicando que esto no reemplaza una evaluación médica. Responde en español, breve y estructurado."
+          "Eres un asistente de triage para un consultorio médico. NO diagnostiques. Clasifica urgencia (baja/media/alta), sugiere especialidad y sugiere preguntas de aclaración. Termina siempre indicando que esto no reemplaza una evaluación médica. Responde en español, breve y estructurado."
       },
       { role: "user", content: `Mensaje del paciente: ${message}` }
     ]

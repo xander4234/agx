@@ -150,7 +150,7 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   doc.rect(0, 96, W, 4).fill(TEAL);
 
   doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(21).text(row.clinic_name || "AGX Salud", M, 24, { width: CW * 0.6 });
-  doc.font("Helvetica").fontSize(9.5).fillColor("#c7e8e3").text("Sistema de gestión clínica AGX Salud", M, 52);
+  doc.font("Helvetica").fontSize(9.5).fillColor("#c7e8e3").text("Sistema de gestión médica AGX Salud", M, 52);
   doc.text("Ecuador", M, 65);
 
   doc.font("Helvetica-Bold").fontSize(15).fillColor("#ffffff")

@@ -17,8 +17,11 @@ async function main() {
   await q(sql);
 
   // 2) seed: clinic + admin (idempotent)
-  const clinicName = "AGX Clinic Demo";
-  const clinic = await q("SELECT id FROM clinics WHERE name=$1 LIMIT 1", [clinicName]);
+  // Renombrar el establecimiento demo si existe (sale en los PDFs)
+  await q("UPDATE clinics SET name='Consultorio AGX' WHERE name='AGX Clinic Demo'");
+
+  const clinicName = "Consultorio AGX";
+  const clinic = await q("SELECT id FROM clinics ORDER BY created_at ASC LIMIT 1");
   let clinicId = clinic.rows[0]?.id;
 
   if (!clinicId) {
