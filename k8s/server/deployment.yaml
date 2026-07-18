@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: ghcr.io/xander4234/agx/server:104d2d8787e19c3a0ed0abfc773954cafb00028d
+          image: ghcr.io/xander4234/agx/server:dd540acc2c0ce98f51db3372bade6e077286d860
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
