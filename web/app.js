@@ -69,7 +69,7 @@ function showApp(){
   $("#loginScreen").classList.add("hidden");
   $("#appShell").classList.remove("hidden");
   const name = me?.name || "—";
-  const rolMap = { admin:"Administración", provider:"Medicina General", staff:"Personal" };
+  const rolMap = { superadmin:"Superadministrador", admin:"Administración", provider:"Medicina General", staff:"Personal" };
   $("#heroSub").textContent = `Bienvenido, ${name.toUpperCase()} · ${rolMap[me?.role] || ""} · ${todayStr()}`;
 }
 function showLogin(){
@@ -106,44 +106,6 @@ $("#loginForm").addEventListener("submit", async (e)=>{
 });
 $("#btnLogout").addEventListener("click", showLogin);
 
-/* --- registro de nuevo consultorio --- */
-$("#toggleReg")?.addEventListener("click", ()=>{
-  const showingReg = !$("#regForm").classList.contains("hidden");
-  $("#regForm").classList.toggle("hidden", showingReg);
-  $("#loginForm").classList.toggle("hidden", !showingReg);
-  $("#toggleReg").textContent = showingReg ? "¿Nuevo consultorio? Créalo aquí" : "← Volver a iniciar sesión";
-});
-
-$("#regForm")?.addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const msg = $("#regMsg");
-  msg.textContent = "Creando consultorio…";
-  try{
-    const res = await fetch(`${API}/auth/register`, {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        clinicName: $("#regClinic").value.trim(),
-        fullName: $("#regName").value.trim(),
-        email: $("#regEmail").value.trim(),
-        password: $("#regPass").value,
-      })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "error");
-    token = data.token; me = data.user;
-    localStorage.setItem("agx_token", token);
-    localStorage.setItem("agx_me", JSON.stringify(me));
-    msg.textContent = "";
-    showApp();
-    setView("dashboard");
-    await loadAll();
-  }catch(err){
-    msg.textContent = String(err.message) === "email_in_use"
-      ? "Ese email ya está registrado."
-      : "No se pudo crear (contraseña mínimo 8 caracteres).";
-  }
-});
-
 /* ================= data load ================= */
 async function loadAll(){
   [PATIENTS, APPTS, QUEUE] = await Promise.all([
@@ -171,14 +133,74 @@ async function loadClinicConfig(){
     $("#clinicName").value = CLINIC.name || "";
   }catch{}
   $("#meName") && ($("#meName").textContent = me?.name || "—");
-  $("#meRole") && ($("#meRole").textContent = ({admin:"Administrador",provider:"Médico",staff:"Personal"})[me?.role] || me?.role || "—");
+  $("#meRole") && ($("#meRole").textContent = ({superadmin:"Superadministrador",admin:"Administrador",provider:"Médico",staff:"Personal"})[me?.role] || me?.role || "—");
 
-  const isAdmin = me?.role === "admin";
+  const isAdmin = ["admin", "superadmin"].includes(me?.role);
   $("#usersCard")?.classList.toggle("hidden", !isAdmin);
   $("#newUserCard")?.classList.toggle("hidden", !isAdmin);
   $("#clinicForm").querySelector("button").disabled = !isAdmin;
   if (isAdmin) await loadUsers();
+
+  // panel de plataforma solo para el superadmin
+  const isSuper = me?.role === "superadmin";
+  $("#tabSuper")?.classList.toggle("hidden", !isSuper);
+  if (isSuper) await loadSuperPanel();
 }
+
+/* ================= superadmin: consultorios de la plataforma ================= */
+async function loadSuperPanel(){
+  try{
+    const clinics = await api("/superadmin/clinics");
+    $("#superTable").innerHTML = clinics.length ? `
+      <table class="tbl">
+        <thead><tr><th>Consultorio</th><th>Usuarios</th><th>Pacientes</th><th>Creado</th><th></th></tr></thead>
+        <tbody>${clinics.map(c => `
+          <tr>
+            <td><b>${escapeHtml(c.name)}</b></td>
+            <td>${c.users_count}</td>
+            <td>${c.patients_count}</td>
+            <td>${fmtDay(c.created_at)}</td>
+            <td>${c.id !== CLINIC?.id
+              ? `<button class="btn btn-outline btn-sm" data-delclinic="${c.id}" data-clinicname="${escapeHtml(c.name)}">Eliminar</button>`
+              : `<span class="pill info">el tuyo</span>`}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>` : `<div class="empty">Sin consultorios aún</div>`;
+  }catch{
+    $("#superTable").innerHTML = `<div class="empty">No se pudo cargar (¿tu sesión ya es superadmin? Cierra sesión y vuelve a entrar)</div>`;
+  }
+}
+
+$("#superForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const msg = $("#superMsg");
+  msg.textContent = "Creando consultorio…";
+  try{
+    const r = await api("/superadmin/clinics", { method:"POST", body: JSON.stringify({
+      clinicName: $("#scClinic").value.trim(),
+      adminName: $("#scAdmin").value.trim(),
+      email: $("#scEmail").value.trim(),
+      password: $("#scPass").value,
+    })});
+    msg.textContent = `✅ Creado. Entrégale al doctor: ${r.admin.email} / la clave que pusiste`;
+    e.target.reset();
+    await loadSuperPanel();
+  }catch(err){
+    msg.textContent = String(err.message).includes("email_in_use")
+      ? "Ese email ya está registrado."
+      : "No se pudo crear (revisa email y contraseña de 8+ caracteres).";
+  }
+});
+
+$("#superTable")?.addEventListener("click", async (e)=>{
+  const b = e.target.closest("button[data-delclinic]");
+  if (!b) return;
+  const nombre = b.dataset.clinicname;
+  if (!confirm(`⚠️ ¿Eliminar el consultorio "${nombre}"?\n\nSe borrarán TODOS sus datos: usuarios, pacientes, citas, historias, recetas. Esta acción NO se puede deshacer.`)) return;
+  if (!confirm(`Confirma otra vez: eliminar definitivamente "${nombre}".`)) return;
+  try{ await api(`/superadmin/clinics/${b.dataset.delclinic}`, { method:"DELETE" }); await loadSuperPanel(); }
+  catch{ alert("No se pudo eliminar."); }
+});
 
 async function loadUsers(){
   try{

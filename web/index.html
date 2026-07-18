@@ -66,21 +66,6 @@
           <div class="muted center" id="loginMsg"></div>
         </form>
 
-        <!-- Registro de nuevo consultorio -->
-        <form id="regForm" class="form hidden">
-          <label>Nombre del consultorio</label>
-          <input id="regClinic" placeholder="Consultorio Dr. Pérez" required />
-          <label>Tu nombre completo</label>
-          <input id="regName" placeholder="Dr. Juan Pérez" required />
-          <label>Email</label>
-          <input id="regEmail" type="email" placeholder="doctor@correo.com" required />
-          <label>Contraseña (mínimo 8 caracteres)</label>
-          <input id="regPass" type="password" placeholder="••••••••" minlength="8" required />
-          <button class="btn btn-primary btn-block btn-login" type="submit">Crear consultorio</button>
-          <div class="muted center" id="regMsg"></div>
-        </form>
-
-        <div class="login-hint"><button class="link" id="toggleReg" type="button">¿Nuevo consultorio? Créalo aquí</button></div>
         <div class="login-foot">🔐 Conexión segura · Datos protegidos</div>
       </div>
 
@@ -115,6 +100,7 @@
       <button data-view="chat" class="tab">Chat</button>
       <button data-view="ia" class="tab">IA triage</button>
       <button data-view="config" class="tab">⚙️ Configuración</button>
+      <button data-view="super" class="tab hidden" id="tabSuper">🛡️ Consultorios</button>
     </nav>
 
     <!-- ==================== DASHBOARD ==================== -->
@@ -817,6 +803,41 @@
               <div class="kv"><div class="k">USUARIO</div><div class="v" id="meName">—</div></div>
               <div class="kv"><div class="k">ROL</div><div class="v" id="meRole">—</div></div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SUPERADMIN: CONSULTORIOS ==================== -->
+    <section id="view-super" class="view hidden">
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">🛡️ Consultorios de la plataforma</h2>
+                <p class="card-sub">Solo tú puedes crear y eliminar consultorios</p>
+              </div>
+            </div>
+            <div id="superTable"></div>
+          </div>
+        </div>
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Nuevo consultorio</h2>
+            <p class="card-sub">Se crea con su usuario administrador — entrégale las credenciales al doctor</p>
+            <form class="form" id="superForm">
+              <label>Nombre del consultorio</label>
+              <input id="scClinic" placeholder="Consultorio Dr. Pérez" required minlength="3" />
+              <label>Nombre del administrador</label>
+              <input id="scAdmin" placeholder="Dr. Juan Pérez" required />
+              <label>Email del administrador</label>
+              <input id="scEmail" type="email" placeholder="doctor@correo.com" required />
+              <label>Contraseña inicial (mínimo 8 caracteres)</label>
+              <input id="scPass" type="text" minlength="8" required placeholder="Clave temporal" />
+              <button class="btn btn-primary btn-block" type="submit">Crear consultorio</button>
+              <div class="muted" id="superMsg"></div>
+            </form>
           </div>
         </div>
       </div>

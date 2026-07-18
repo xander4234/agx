@@ -64,6 +64,11 @@ async function main() {
     );
   }
 
+  // 4) rol superadmin: ajustar constraint y promover a angel
+  await q("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+  await q("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('superadmin','admin','staff','provider'))");
+  await q("UPDATE users SET role='superadmin' WHERE email='angel@agx.local'");
+
   console.log("DB initialized ✅");
 }
 

@@ -23,6 +23,7 @@ import encountersRoutes from "./routes/encounters.js";
 import filesRoutes from "./routes/files.js";
 import certificatesRoutes from "./routes/certificates.js";
 import clinicRoutes from "./routes/clinic.js";
+import superadminRoutes from "./routes/superadmin.js";
 import chatRoutes from "./routes/chat.js";
 import aiRoutes from "./routes/ai.js";
 
@@ -82,6 +83,7 @@ app.use("/api/encounters", encountersRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/certificates", certificatesRoutes);
 app.use("/api/clinic", clinicRoutes);
+app.use("/api/superadmin", superadminRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/ai", aiLimiter, aiRoutes);
 
