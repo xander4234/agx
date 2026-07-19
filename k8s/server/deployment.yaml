@@ -12,6 +12,20 @@ spec:
       labels:
         app: server
     spec:
+      # Espera a Postgres y crea las tablas + usuario superadmin (idempotente)
+      initContainers:
+        - name: db-init
+          image: ghcr.io/xander4234/agx/server:dd540acc2c0ce98f51db3372bade6e077286d860
+          command: ["node", "db_init.js"]
+          envFrom:
+            - configMapRef:
+                name: server-config
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: server-secret
+                  key: PGPASSWORD
       containers:
         - name: server
           image: ghcr.io/xander4234/agx/server:dd540acc2c0ce98f51db3372bade6e077286d860
@@ -21,7 +35,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: server-config
-            
           env:
             - name: JWT_SECRET
               valueFrom:
@@ -38,3 +51,31 @@ spec:
                 secretKeyRef:
                   name: server-secret
                   key: OPENAI_API_KEY
+          # Exámenes/archivos subidos — sobreviven a reinicios y actualizaciones
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/uploads
+          # Health checks — K8s reinicia el pod si deja de responder
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3001
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: uploads-pvc

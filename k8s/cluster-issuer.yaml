@@ -1,0 +1,16 @@
+# Emisor de certificados HTTPS gratuitos (Let's Encrypt) — se aplica una sola vez.
+# Cambia el email por el tuyo (te avisa si un certificado va a expirar).
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: angelxander2003@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx

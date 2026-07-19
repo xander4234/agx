@@ -4,6 +4,7 @@ metadata:
   name: server-config
 data:
   PORT: "3001"
+  NODE_ENV: "production"      # ← modo producción (exige JWT_SECRET, sin logs verbosos)
   PGHOST: "postgres-service"  # ← nombre del Service de PostgreSQL en k8s
   PGPORT: "5432"              # ← puerto estándar interno (no el 5435 de docker-compose)
   PGUSER: "agx"

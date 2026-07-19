@@ -1,0 +1,36 @@
+# ============================================================
+# Ingress con HTTPS para AGX Salud
+# Requiere: ingress-nginx + cert-manager instalados en el cluster,
+# y un ClusterIssuer llamado "letsencrypt-prod".
+#
+# Todo el tráfico entra al frontend (nginx), que ya hace de proxy
+# hacia el server para /api y /socket.io — por eso solo se expone
+# el frontend-service aquí.
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: agx-ingress
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "12m"   # permite subir exámenes (límite app: 10 MB)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - salud.angelxander.com
+      secretName: agx-tls
+  rules:
+    - host: salud.angelxander.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
