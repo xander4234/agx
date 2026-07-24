@@ -15,7 +15,7 @@ spec:
       # Espera a Postgres y crea las tablas + usuario superadmin (idempotente)
       initContainers:
         - name: db-init
-          image: ghcr.io/xander4234/agx/server:9117cd55a4a3cb8388fe04eac4860ec830c9199c
+          image: ghcr.io/xander4234/agx/server:faf7f38b3cc6a503a75d42bdf6ce12d006a66a29
           command: ["node", "db_init.js"]
           envFrom:
             - configMapRef:
@@ -28,7 +28,7 @@ spec:
                   key: PGPASSWORD
       containers:
         - name: server
-          image: ghcr.io/xander4234/agx/server:9117cd55a4a3cb8388fe04eac4860ec830c9199c
+          image: ghcr.io/xander4234/agx/server:faf7f38b3cc6a503a75d42bdf6ce12d006a66a29
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
