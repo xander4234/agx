@@ -5,8 +5,6 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 let token = localStorage.getItem("agx_token") || "";
 let me = (() => { try { return JSON.parse(localStorage.getItem("agx_me")); } catch { return null; } })();
-let socket = null;
-let currentThreadId = null;
 
 // caches
 let PATIENTS = [];
@@ -56,6 +54,8 @@ function setView(name){
   const el = $("#view-" + name);
   if (el) el.classList.remove("hidden");
   if (name === "caja") loadCaja().catch(()=>{});
+  if (name === "inventario") loadInventory().catch(()=>{});
+  if (name === "recordatorios") renderReminders();
 }
 $("#tabs").addEventListener("click", (e)=>{
   const b = e.target.closest("button[data-view]");
@@ -78,7 +78,6 @@ function showLogin(){
   token = ""; me = null;
   localStorage.removeItem("agx_token");
   localStorage.removeItem("agx_me");
-  if (socket){ socket.disconnect(); socket = null; }
   $("#appShell").classList.add("hidden");
   $("#loginScreen").classList.remove("hidden");
 }
@@ -117,15 +116,16 @@ async function loadAll(){
   ]);
   renderDashboard();
   renderAgenda();
+  renderReminders();
   renderPatients(PATIENTS);
   renderQueue();
-  renderChatAppts();
   fillPatientSelects();
   await loadPrescriptions();
   await loadClinicConfig();
   await Promise.all([
     loadTemplates().catch(()=>{}),
     loadBirthdays().catch(()=>{}),
+    loadInvAlerts().catch(()=>{}),
   ]);
 }
 
@@ -498,8 +498,8 @@ $("#togglePass")?.addEventListener("click", ()=>{
 const TAGLINES = [
   "Gestión médica inteligente para tu equipo",
   "Agenda, historia clínica y recetas en un solo lugar",
-  "Telemedicina y chat en tiempo real con tus pacientes",
-  "Triage asistido con inteligencia artificial",
+  "Recordatorios por WhatsApp que reducen el ausentismo",
+  "Caja, estadísticas e inventario de tu consultorio",
   "Cumple la normativa del MSP Ecuador",
 ];
 let tagIdx = 0;
@@ -524,7 +524,6 @@ function apptActions(a){
     ${a.phone && ["scheduled","confirmed"].includes(a.status) ? `<button class="btn btn-wa btn-sm" data-wa="${a.id}" title="Enviar recordatorio por WhatsApp">📱 WhatsApp</button>` : ""}
     ${["scheduled","confirmed"].includes(a.status) ? `<button class="btn btn-outline btn-sm" data-status="${a.id}:no_show" title="El paciente no vino">✗ No asistió</button>` : ""}
     ${a.type === "virtual" ? `<button class="btn btn-primary btn-sm" data-room="${a.id}">Sala</button>` : ""}
-    <button class="btn btn-outline btn-sm" data-chat="${a.id}">Chat</button>
     <button class="btn btn-outline btn-sm" data-hc="${a.patient_id}">Historia</button>
     <button class="btn btn-outline btn-sm" data-rxgo="${a.patient_id}:${a.id}">Receta</button>
   </div>`;
@@ -647,9 +646,6 @@ document.addEventListener("click", async (e)=>{
     }catch{}
     return;
   }
-  const chat = e.target.closest("button[data-chat]");
-  if (chat){ await openChatForAppointment(chat.dataset.chat); return; }
-
   const wa = e.target.closest("button[data-wa]");
   if (wa){ openWhatsApp(wa.dataset.wa); return; }
 
@@ -1534,82 +1530,147 @@ $("#walkinForm").addEventListener("submit", async (e)=>{
   }catch{ msg.textContent = "No se pudo agregar."; }
 });
 
-/* ================= chat ================= */
-function renderChatAppts(){
-  const recent = APPTS.slice(0, 15);
-  $("#chatApptTable").innerHTML = recent.length ? `
+/* ================= inventario ================= */
+async function loadInventory(){
+  const term = $("#invSearch")?.value.trim() || "";
+  const list = await api(`/inventory${term ? `?search=${encodeURIComponent(term)}` : ""}`);
+  const catMap = { med:"Medicamento", supply:"Insumo", other:"Otro" };
+  const isAdmin = ["admin","superadmin"].includes(me?.role);
+  const soon = Date.now() + 60 * 86400000;
+
+  $("#invTable").innerHTML = list.length ? `
     <table class="tbl">
-      <thead><tr><th>Paciente</th><th>Fecha</th><th></th></tr></thead>
-      <tbody>${recent.map(a => `
+      <thead><tr><th>Ítem</th><th>Stock</th><th>Vence</th><th>Acciones</th></tr></thead>
+      <tbody>${list.map(it => {
+        const low = Number(it.stock) <= Number(it.min_stock);
+        const expiring = it.expiry_date && new Date(it.expiry_date).getTime() <= soon;
+        const expired = it.expiry_date && new Date(it.expiry_date) < new Date();
+        return `
         <tr>
-          <td><b>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</b><div class="muted">${escapeHtml(a.reason || "")}</div></td>
-          <td>${fmtDate(a.starts_at)}</td>
-          <td><button class="btn btn-outline btn-sm" data-chat="${a.id}">💬 Abrir chat</button></td>
+          <td data-label="Ítem"><b>${escapeHtml(it.name)}</b>
+            <div class="muted">${catMap[it.category] || ""}${it.notes ? " · " + escapeHtml(it.notes) : ""}</div></td>
+          <td data-label="Stock">
+            <b style="${low ? "color:#dc2626" : ""}">${Number(it.stock)}</b> ${escapeHtml(it.unit || "")}
+            ${low ? `<div><span class="pill bad">Stock bajo</span></div>` : ""}
+            <div class="muted">mín: ${Number(it.min_stock)}</div>
+          </td>
+          <td data-label="Vence">${it.expiry_date ? fmtDay(it.expiry_date) : "—"}
+            ${expired ? `<div><span class="pill bad">Vencido</span></div>` : expiring ? `<div><span class="pill wait">Por vencer</span></div>` : ""}</td>
+          <td><div class="row-actions">
+            <button class="btn btn-outline btn-sm" data-invadj="${it.id}:1" title="Entrada">＋</button>
+            <button class="btn btn-outline btn-sm" data-invadj="${it.id}:-1" title="Salida">−</button>
+            <button class="btn btn-outline btn-sm" data-invadjn="${it.id}" title="Ajustar cantidad">±N</button>
+            ${isAdmin ? `<button class="btn btn-outline btn-sm" data-invdel="${it.id}">✕</button>` : ""}
+          </div></td>
+        </tr>`; }).join("")}
+      </tbody>
+    </table>` : `<div class="empty">Inventario vacío — agrega el primer ítem</div>`;
+}
+
+let invTimer = null;
+$("#invSearch")?.addEventListener("input", ()=>{
+  clearTimeout(invTimer);
+  invTimer = setTimeout(()=> loadInventory().catch(()=>{}), 300);
+});
+
+$("#invForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const msg = $("#invMsg");
+  msg.textContent = "Guardando…";
+  try{
+    await api("/inventory", { method:"POST", body: JSON.stringify({
+      name: $("#invName").value.trim(),
+      category: $("#invCat").value,
+      unit: $("#invUnit").value.trim() || null,
+      stock: Number($("#invStock").value) || 0,
+      min_stock: Number($("#invMin").value) || 0,
+      expiry_date: $("#invExpiry").value || null,
+      notes: $("#invNotes").value.trim() || null,
+    })});
+    msg.textContent = "Ítem agregado ✅";
+    e.target.reset();
+    await loadInventory();
+    loadInvAlerts().catch(()=>{});
+  }catch{ msg.textContent = "No se pudo guardar."; }
+});
+
+$("#invTable")?.addEventListener("click", async (e)=>{
+  const adj = e.target.closest("button[data-invadj]");
+  if (adj){
+    const [id, delta] = adj.dataset.invadj.split(":");
+    try{ await api(`/inventory/${id}/adjust`, { method:"POST", body: JSON.stringify({ delta: Number(delta) }) }); await loadInventory(); loadInvAlerts().catch(()=>{}); }catch{}
+    return;
+  }
+  const adjn = e.target.closest("button[data-invadjn]");
+  if (adjn){
+    const v = prompt("Cantidad a ajustar (positiva = entrada, negativa = salida):", "-1");
+    const delta = Number(v);
+    if (!v || !Number.isFinite(delta) || delta === 0) return;
+    try{ await api(`/inventory/${adjn.dataset.invadjn}/adjust`, { method:"POST", body: JSON.stringify({ delta }) }); await loadInventory(); loadInvAlerts().catch(()=>{}); }catch{}
+    return;
+  }
+  const del = e.target.closest("button[data-invdel]");
+  if (del){
+    if (!confirm("¿Eliminar este ítem del inventario?")) return;
+    try{ await api(`/inventory/${del.dataset.invdel}`, { method:"DELETE" }); await loadInventory(); loadInvAlerts().catch(()=>{}); }
+    catch{ alert("No se pudo eliminar."); }
+  }
+});
+
+/* --- alertas de inventario en el dashboard --- */
+async function loadInvAlerts(){
+  const card = $("#invAlertCard");
+  if (!card) return;
+  const alerts = await api("/inventory/alerts");
+  if (!alerts.length){ card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+  $("#invAlertList").innerHTML = alerts.slice(0, 6).map(a => `
+    <div class="bday-row">
+      <span class="bday-ico">${a.low_stock ? "📉" : "⏰"}</span>
+      <div class="bday-info"><b>${escapeHtml(a.name)}</b>
+        <span>${a.low_stock ? `Quedan ${Number(a.stock)} ${escapeHtml(a.unit || "")} (mín ${Number(a.min_stock)})` : `Vence ${fmtDay(a.expiry_date)}`}</span>
+      </div>
+    </div>`).join("");
+}
+
+/* ================= recordatorios de citas ================= */
+$("#remRange")?.addEventListener("change", ()=> renderReminders());
+
+function renderReminders(){
+  const el = $("#remTable");
+  if (!el) return;
+  const range = $("#remRange")?.value || "tomorrow";
+  const today = new Date(); today.setHours(0,0,0,0);
+  let from, to;
+  if (range === "today"){ from = today; to = new Date(today.getTime() + 86400000); }
+  else if (range === "tomorrow"){ from = new Date(today.getTime() + 86400000); to = new Date(today.getTime() + 2 * 86400000); }
+  else { from = today; to = new Date(today.getTime() + 7 * 86400000); }
+
+  const list = APPTS
+    .filter(a => { const t = new Date(a.starts_at); return t >= from && t < to && ["scheduled","confirmed"].includes(a.status); })
+    .sort((a,b)=> new Date(a.starts_at) - new Date(b.starts_at));
+
+  $("#remCount").textContent = String(list.length);
+  $("#remWithPhone").textContent = String(list.filter(a => a.phone).length);
+
+  el.innerHTML = list.length ? `
+    <table class="tbl">
+      <thead><tr><th>Paciente</th><th>Fecha</th><th>Motivo</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>${list.map(a => `
+        <tr>
+          <td data-label="Paciente"><b>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</b>
+            <div class="muted">${escapeHtml(a.phone || "sin teléfono")}</div></td>
+          <td data-label="Fecha">${fmtDate(a.starts_at)}</td>
+          <td data-label="Motivo" class="muted">${escapeHtml(a.reason || "—")}</td>
+          <td data-label="Estado">${pill(a.status)}</td>
+          <td><div class="row-actions">
+            ${a.phone ? `<button class="btn btn-wa btn-sm" data-wa="${a.id}">📱 Recordar</button>` : `<span class="muted">sin teléfono</span>`}
+            ${a.status === "scheduled" ? `<button class="btn btn-outline btn-sm" data-status="${a.id}:confirmed">✓ Confirmada</button>` : ""}
+          </div></td>
         </tr>`).join("")}
       </tbody>
-    </table>` : `<div class="empty">Sin citas</div>`;
+    </table>` : `<div class="empty">No hay citas pendientes en este rango 🎉</div>`;
 }
-
-async function ensureSocket(){
-  if (socket) return socket;
-  socket = io({ auth: { token } });
-  socket.on("connect_error", (e)=> console.warn("socket:", e.message));
-  socket.on("message:new", (msg)=>{
-    if (currentThreadId && msg.thread_id === currentThreadId){
-      const div = document.createElement("div");
-      div.className = "msg";
-      div.innerHTML = `<div class="meta">${escapeHtml(msg.sender_name || "Usuario")} · ${fmtDate(msg.created_at)}</div><div class="body">${escapeHtml(msg.body)}</div>`;
-      $("#chatLog").appendChild(div);
-      $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
-    }
-  });
-  return socket;
-}
-
-async function openChatForAppointment(appointmentId){
-  setView("chat");
-  try{
-    const thread = await api("/chat/thread", { method:"POST", body: JSON.stringify({ appointment_id: appointmentId }) });
-    currentThreadId = thread.id;
-    const appt = APPTS.find(a => a.id === appointmentId);
-    $("#chatSub").textContent = appt ? `Chat con ${appt.first_name} ${appt.last_name}` : `Hilo ${thread.id.slice(0,8)}`;
-
-    const msgs = await api(`/chat/thread/${thread.id}/messages`);
-    $("#chatLog").innerHTML = msgs.map(m => `
-      <div class="msg">
-        <div class="meta">${escapeHtml(m.sender_name || "Usuario")} · ${fmtDate(m.created_at)}</div>
-        <div class="body">${escapeHtml(m.body)}</div>
-      </div>`).join("");
-    $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
-
-    const s = await ensureSocket();
-    s.emit("thread:join", { threadId: thread.id });
-  }catch{
-    $("#chatSub").textContent = "No se pudo abrir el chat.";
-  }
-}
-
-$("#chatForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const body = $("#chatInput").value.trim();
-  if (!body || !currentThreadId) return;
-  $("#chatInput").value = "";
-  const s = await ensureSocket();
-  s.emit("message:send", { threadId: currentThreadId, body });
-});
-
-/* ================= IA ================= */
-$("#aiForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const msg = $("#aiMsg");
-  msg.textContent = "Analizando…";
-  $("#aiAnswer").textContent = "";
-  try{
-    const data = await api("/ai/triage", { method:"POST", body: JSON.stringify({ message: $("#aiMessage").value }) });
-    msg.textContent = "";
-    $("#aiAnswer").textContent = data.reply;
-  }catch{ msg.textContent = "No se pudo analizar."; }
-});
 
 /* ================= caja y estadísticas ================= */
 const money = (v) => `$${Number(v || 0).toFixed(2)}`;

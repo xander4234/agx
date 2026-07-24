@@ -72,6 +72,20 @@ async function run() {
     created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
   )`);
 
+  // ---- Inventario de medicamentos e insumos ----
+  await q(`CREATE TABLE IF NOT EXISTS inventory_items (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id   UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
+    name        TEXT NOT NULL,
+    category    TEXT NOT NULL DEFAULT 'med' CHECK (category IN ('med','supply','other')),
+    unit        TEXT,
+    stock       NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (stock >= 0),
+    min_stock   NUMERIC(10,2) NOT NULL DEFAULT 0,
+    expiry_date DATE,
+    notes       TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`);
+
   // ---- Auditoría de accesos (Ley Orgánica de Protección de Datos Personales) ----
   await q(`CREATE TABLE IF NOT EXISTS audit_log (
     id         BIGSERIAL PRIMARY KEY,
@@ -95,6 +109,7 @@ async function run() {
   await q(`CREATE INDEX IF NOT EXISTS idx_payments_clinic      ON payments(clinic_id, created_at DESC)`);
   await q(`CREATE INDEX IF NOT EXISTS idx_audit_clinic         ON audit_log(clinic_id, created_at DESC)`);
   await q(`CREATE INDEX IF NOT EXISTS idx_enc_appt             ON encounters(appointment_id)`);
+  await q(`CREATE INDEX IF NOT EXISTS idx_inventory_clinic     ON inventory_items(clinic_id, name)`);
 
   console.log("Migraciones automáticas aplicadas ✅");
 }

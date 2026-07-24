@@ -98,8 +98,8 @@
       <button data-view="recetas" class="tab">Recetas</button>
       <button data-view="caja" class="tab">💰 Caja</button>
       <button data-view="inmediata" class="tab">Atención inmediata</button>
-      <button data-view="chat" class="tab">Chat</button>
-      <button data-view="ia" class="tab">IA triage</button>
+      <button data-view="inventario" class="tab">📦 Inventario</button>
+      <button data-view="recordatorios" class="tab">📱 Recordatorios</button>
       <button data-view="config" class="tab">⚙️ Configuración</button>
       <button data-view="super" class="tab hidden" id="tabSuper">🛡️ Consultorios</button>
     </nav>
@@ -194,9 +194,9 @@
                 <div class="quick-icon qi-rose">💊</div>
                 <div><b>Receta médica</b><span>Emitir receta al paciente</span></div>
               </button>
-              <button class="quick" data-nav="ia">
-                <div class="quick-icon qi-violet">🤖</div>
-                <div><b>IA triage</b><span>Clasificar urgencia</span></div>
+              <button class="quick" data-nav="recordatorios">
+                <div class="quick-icon qi-violet">📱</div>
+                <div><b>Recordatorios</b><span>WhatsApp a citas de mañana</span></div>
               </button>
             </div>
           </div>
@@ -213,6 +213,17 @@
             <div class="avail">
               <span class="dot"></span> <b>Disponible</b> · Horario 08:00 – 17:00
             </div>
+          </div>
+
+          <div class="card hidden" id="invAlertCard">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">⚠️ Inventario</h2>
+                <p class="card-sub">Stock bajo o por vencer</p>
+              </div>
+              <button class="link" data-nav="inventario">Ver inventario</button>
+            </div>
+            <div id="invAlertList"></div>
           </div>
 
           <div class="card hidden" id="birthdayCard">
@@ -928,48 +939,99 @@
       </div>
     </section>
 
-    <!-- ==================== CHAT ==================== -->
-    <section id="view-chat" class="view hidden">
+    <!-- ==================== INVENTARIO ==================== -->
+    <section id="view-inventario" class="view hidden">
       <div class="main-grid">
         <div class="col-main">
           <div class="card">
             <div class="card-head">
               <div>
-                <h2 class="card-title">Selecciona cita</h2>
-                <p class="card-sub">El chat es privado por cita</p>
+                <h2 class="card-title">📦 Inventario</h2>
+                <p class="card-sub">Medicamentos e insumos del consultorio</p>
               </div>
             </div>
-            <div id="chatApptTable"></div>
+            <input id="invSearch" class="search" placeholder="🔍 Buscar por nombre…" />
+            <div id="invTable"></div>
           </div>
         </div>
         <div class="col-side">
           <div class="card">
-            <h2 class="card-title">Chat</h2>
-            <p class="card-sub" id="chatSub">Sin hilo seleccionado</p>
-            <div class="chat">
-              <div class="chat-log" id="chatLog"></div>
-              <form class="chat-form" id="chatForm">
-                <input id="chatInput" placeholder="Escribe un mensaje…" />
-                <button class="btn btn-primary" type="submit">Enviar</button>
-              </form>
-            </div>
+            <h2 class="card-title">Nuevo ítem</h2>
+            <p class="card-sub">Agregar al inventario</p>
+            <form class="form" id="invForm">
+              <label>Nombre</label>
+              <input id="invName" required placeholder="Ej: Paracetamol 500mg tabletas" />
+              <div class="grid2">
+                <div><label>Categoría</label>
+                  <select id="invCat">
+                    <option value="med">Medicamento</option>
+                    <option value="supply">Insumo</option>
+                    <option value="other">Otro</option>
+                  </select>
+                </div>
+                <div><label>Unidad</label><input id="invUnit" placeholder="tabletas, cajas, ml…" /></div>
+              </div>
+              <div class="grid2">
+                <div><label>Stock actual</label><input id="invStock" type="number" step="1" min="0" placeholder="50" /></div>
+                <div><label>Stock mínimo (alerta)</label><input id="invMin" type="number" step="1" min="0" placeholder="10" /></div>
+              </div>
+              <label>Fecha de vencimiento (opcional)</label>
+              <input id="invExpiry" type="date" />
+              <label>Notas</label>
+              <input id="invNotes" placeholder="Lote, proveedor…" />
+              <button class="btn btn-primary btn-block" type="submit">Agregar al inventario</button>
+              <div class="muted" id="invMsg"></div>
+            </form>
+          </div>
+          <div class="card">
+            <h2 class="card-title">💡 Cómo funciona</h2>
+            <p class="card-sub">
+              Usa <b>+</b> y <b>−</b> para entradas y salidas de stock.
+              Cuando un ítem baja del mínimo o está por vencer (60 días),
+              aparece una alerta en el Dashboard.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ==================== IA ==================== -->
-    <section id="view-ia" class="view hidden">
-      <div class="card">
-        <h2 class="card-title">IA — Triage (solo sugerencias)</h2>
-        <p class="card-sub">No reemplaza diagnóstico médico. Clasifica urgencia y sugiere especialidad.</p>
-        <form class="form" id="aiForm">
-          <label>Mensaje del paciente</label>
-          <textarea id="aiMessage" placeholder="Describe síntomas, tiempo de evolución…"></textarea>
-          <button class="btn btn-primary" type="submit">Analizar</button>
-          <div class="muted" id="aiMsg"></div>
-        </form>
-        <div class="answer" id="aiAnswer"></div>
+    <!-- ==================== RECORDATORIOS ==================== -->
+    <section id="view-recordatorios" class="view hidden">
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">📱 Recordatorios de citas</h2>
+                <p class="card-sub">Envía el recordatorio por WhatsApp con un clic — reduce el ausentismo</p>
+              </div>
+              <select id="remRange" class="select-lg">
+                <option value="tomorrow">Citas de mañana</option>
+                <option value="today">Citas de hoy</option>
+                <option value="week">Próximos 7 días</option>
+              </select>
+            </div>
+            <div id="remTable"></div>
+          </div>
+        </div>
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">💡 Consejo</h2>
+            <p class="card-sub">
+              Enviar el recordatorio la tarde anterior reduce hasta un
+              <b>40% las citas perdidas</b>. El botón abre WhatsApp con el
+              mensaje ya escrito: solo revisas y envías.
+            </p>
+          </div>
+          <div class="card">
+            <h2 class="card-title">Estado de esta lista</h2>
+            <div class="kv-grid">
+              <div class="kv"><div class="k">CITAS</div><div class="v" id="remCount">—</div></div>
+              <div class="kv"><div class="k">CON TELÉFONO</div><div class="v" id="remWithPhone">—</div></div>
+            </div>
+            <p class="card-sub" style="margin-top:10px;">Los pacientes sin teléfono no muestran botón de WhatsApp — agrégales el número en su ficha.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1095,7 +1157,6 @@
     <span class="sd si5">💉</span>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

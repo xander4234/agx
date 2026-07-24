@@ -7,14 +7,11 @@ import dotenv from "dotenv";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Server as SocketIOServer } from "socket.io";
-import jwt from "jsonwebtoken";
 
 dotenv.config();
 
 import { q, pool } from "./db.js";
 import { ensureUpgrades, auditMiddleware } from "./migrations.js";
-import { JWT_SECRET, isUuid } from "./utils.js";
 import authRoutes from "./routes/auth.js";
 import patientsRoutes from "./routes/patients.js";
 import appointmentsRoutes from "./routes/appointments.js";
@@ -25,12 +22,11 @@ import filesRoutes from "./routes/files.js";
 import certificatesRoutes from "./routes/certificates.js";
 import clinicRoutes from "./routes/clinic.js";
 import superadminRoutes from "./routes/superadmin.js";
-import chatRoutes from "./routes/chat.js";
-import aiRoutes from "./routes/ai.js";
 import icd10Routes from "./routes/icd10.js";
 import templatesRoutes from "./routes/templates.js";
 import paymentsRoutes from "./routes/payments.js";
 import statsRoutes from "./routes/stats.js";
+import inventoryRoutes from "./routes/inventory.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -53,13 +49,6 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "too_many_attempts" },
-});
-const aiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "too_many_requests" },
 });
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -97,12 +86,11 @@ app.use("/api/files", filesRoutes);
 app.use("/api/certificates", certificatesRoutes);
 app.use("/api/clinic", clinicRoutes);
 app.use("/api/superadmin", superadminRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/ai", aiLimiter, aiRoutes);
 app.use("/api/icd10", icd10Routes);
 app.use("/api/templates", templatesRoutes);
 app.use("/api/payments", paymentsRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/inventory", inventoryRoutes);
 
 // 404 para rutas de API desconocidas (antes del fallback del frontend)
 app.use("/api", (req, res) => res.status(404).json({ error: "not_found" }));
@@ -127,52 +115,6 @@ app.use((err, req, res, next) => {
 });
 
 const server = http.createServer(app);
-const io = new SocketIOServer(server, { cors: { origin: corsOrigin } });
-
-io.use((socket, next) => {
-  try {
-    const token = socket.handshake.auth?.token;
-    if (!token) return next(new Error("missing_token"));
-    socket.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch {
-    next(new Error("invalid_token"));
-  }
-});
-
-io.on("connection", (socket) => {
-  socket.on("thread:join", async ({ threadId } = {}) => {
-    try {
-      if (!isUuid(threadId)) return;
-      const r = await q("SELECT id FROM chat_threads WHERE id=$1 AND clinic_id=$2", [threadId, socket.user.clinicId]);
-      if (!r.rows[0]) return;
-      socket.join(`thread:${threadId}`);
-    } catch (e) {
-      console.error("[socket thread:join]", e.message);
-    }
-  });
-
-  socket.on("message:send", async ({ threadId, body } = {}) => {
-    try {
-      if (!isUuid(threadId)) return;
-      const text = String(body ?? "").trim().slice(0, 2000);
-      if (!text) return;
-
-      const thread = await q("SELECT id FROM chat_threads WHERE id=$1 AND clinic_id=$2", [threadId, socket.user.clinicId]);
-      if (!thread.rows[0]) return;
-
-      const senderName = socket.user.name || "Usuario";
-      const ins = await q(
-        "INSERT INTO chat_messages(thread_id, sender_id, sender_name, body) VALUES($1,$2,$3,$4) RETURNING *",
-        [threadId, socket.user.userId, senderName, text]
-      );
-
-      io.to(`thread:${threadId}`).emit("message:new", ins.rows[0]);
-    } catch (e) {
-      console.error("[socket message:send]", e.message);
-    }
-  });
-});
 
 const PORT = Number(process.env.PORT || 3001);
 server.listen(PORT, () => {
