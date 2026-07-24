@@ -99,6 +99,7 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
 
   const NAVY = "#0B1F3B";
   const TEAL = "#0d9488";
+  const TEAL_SOFT = "#5eead4";
   const GRAY = "#64748b";
   const LIGHT = "#f0fdfa";
   const BORDER = "#cbd5e1";
@@ -127,23 +128,36 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   const M = 56;
   const CW = W - M * 2;
 
-  /* Cabecera */
-  doc.rect(0, 0, W, 96).fill(NAVY);
-  doc.rect(0, 96, W, 4).fill(TEAL);
-  doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(21).text(row.clinic_name || "AGX Salud", M, 24, { width: CW * 0.6 });
-  doc.font("Helvetica").fontSize(9.5).fillColor("#c7e8e3").text("Sistema de gestión médica AGX Salud", M, 52);
-  doc.text("Ecuador", M, 65);
-  doc.font("Helvetica-Bold").fontSize(15).fillColor("#ffffff")
-     .text("CERTIFICADO MÉDICO", M, 26, { width: CW, align: "right" });
-  doc.font("Helvetica").fontSize(9.5).fillColor("#c7e8e3")
-     .text(`Certificado No. ${numCert}`, M, 48, { width: CW, align: "right" })
-     .text(`Emitido: ${fechaEmision}`, M, 61, { width: CW, align: "right" });
+  /* Marco doble elegante */
+  doc.lineWidth(1.2).strokeColor(NAVY).rect(18, 18, W - 36, doc.page.height - 36).stroke();
+  doc.lineWidth(0.5).strokeColor(TEAL).rect(23, 23, W - 46, doc.page.height - 46).stroke();
 
-  /* Cuerpo */
-  let y = 150;
-  doc.font("Helvetica-Bold").fontSize(16).fillColor(NAVY)
-     .text("CERTIFICADO MÉDICO", M, y, { width: CW, align: "center" });
-  y += 44;
+  /* Cabecera */
+  doc.rect(24, 24, W - 48, 88).fill(NAVY);
+  doc.rect(24, 112, W - 48, 3.5).fill(TEAL);
+
+  // cruz médica decorativa
+  doc.save().translate(W - M - 26, 44);
+  doc.roundedRect(8, 0, 9, 25, 2.5).fill(TEAL_SOFT);
+  doc.roundedRect(0, 8, 25, 9, 2.5).fill(TEAL_SOFT);
+  doc.restore();
+
+  doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(20).text(row.clinic_name || "AGX Salud", M, 42, { width: CW * 0.65 });
+  doc.font("Helvetica").fontSize(9).fillColor("#8fd8cd")
+     .text(row.provider_name || "Profesional de la salud", M, 68)
+     .text("Ecuador", M, 81);
+  doc.font("Helvetica").fontSize(8.5).fillColor("#8fd8cd")
+     .text(`Nº ${numCert} · ${fechaEmision}`, M, 95, { width: CW, align: "left" });
+
+  /* Título */
+  let y = 148;
+  doc.font("Helvetica-Bold").fontSize(19).fillColor(NAVY)
+     .text("CERTIFICADO  MÉDICO", M, y, { width: CW, align: "center", characterSpacing: 3 });
+  y += 26;
+  // subrayado ornamental
+  doc.moveTo(W/2 - 70, y).lineTo(W/2 + 70, y).lineWidth(1.2).strokeColor(TEAL).stroke();
+  doc.circle(W/2, y, 2.4).fill(TEAL);
+  y += 26;
 
   const nombre = `${row.first_name} ${row.last_name}`.toUpperCase();
   const cedulaTxt = row.id_number ? `, portador(a) de la cédula de identidad No. ${row.id_number}` : "";
@@ -160,23 +174,28 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   y = doc.y + 18;
 
   if (row.diagnosis) {
-    doc.font("Helvetica-Bold").fontSize(10.5).fillColor(TEAL).text("DIAGNÓSTICO / MOTIVO", M, y);
-    y += 15;
-    const dH = Math.max(30, doc.heightOfString(row.diagnosis, { width: CW - 24 }) + 16);
-    doc.roundedRect(M, y, CW, dH, 6).lineWidth(0.8).strokeColor(BORDER).stroke();
-    doc.font("Helvetica").fontSize(11).fillColor("#0F172A").text(row.diagnosis, M + 12, y + 8, { width: CW - 24 });
+    const dH = Math.max(34, doc.heightOfString(row.diagnosis, { width: CW - 24 }) + 22);
+    doc.roundedRect(M, y, CW, dH, 7).fill(LIGHT);
+    doc.roundedRect(M, y, CW, dH, 7).lineWidth(0.7).strokeColor(TEAL_SOFT).stroke();
+    doc.rect(M, y, 3.5, dH).fill(TEAL);
+    doc.font("Helvetica-Bold").fontSize(8).fillColor(TEAL).text("DIAGNÓSTICO / MOTIVO DE ATENCIÓN", M + 14, y + 7);
+    doc.font("Helvetica").fontSize(11).fillColor("#0F172A").text(row.diagnosis, M + 14, y + 19, { width: CW - 28 });
     y += dH + 18;
   }
 
   if (row.rest_days && row.rest_days > 0) {
     const hasta = new Date(emitido.getTime() + row.rest_days * 86400000)
       .toLocaleDateString("es-EC", { day: "2-digit", month: "long", year: "numeric" });
-    doc.font("Helvetica").fontSize(11.5).fillColor("#0F172A").text(
+    const repTxt =
       `Por lo expuesto, se recomienda REPOSO ${row.rest_days === 1 ? "de UN (1) día" : `de ${row.rest_days} (${numeroALetras(row.rest_days)}) días`} ` +
-      `a partir del ${fechaEmision} hasta el ${hasta}, tiempo durante el cual el/la paciente no podrá realizar sus actividades habituales.`,
-      M, y, { width: CW, align: "justify", lineGap: 5 }
-    );
-    y = doc.y + 18;
+      `a partir del ${fechaEmision} hasta el ${hasta}, tiempo durante el cual el/la paciente no podrá realizar sus actividades habituales.`;
+    const rH = doc.heightOfString(repTxt, { width: CW - 28, lineGap: 5 }) + 22;
+    doc.roundedRect(M, y, CW, rH, 7).fill("#fffbeb");
+    doc.roundedRect(M, y, CW, rH, 7).lineWidth(0.7).strokeColor("#fde68a").stroke();
+    doc.rect(M, y, 3.5, rH).fill("#d97706");
+    doc.font("Helvetica-Bold").fontSize(8).fillColor("#b45309").text("REPOSO MÉDICO", M + 14, y + 7);
+    doc.font("Helvetica").fontSize(11).fillColor("#0F172A").text(repTxt, M + 14, y + 19, { width: CW - 28, align: "justify", lineGap: 4 });
+    y += rH + 18;
   }
 
   if (row.observations) {
@@ -191,28 +210,35 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
     M, y, { width: CW, align: "justify", lineGap: 4 }
   );
 
-  /* Firma */
-  const sigY = Math.max(doc.y + 90, 620);
+  /* Firma centrada + sello punteado */
+  const sigY = Math.max(doc.y + 95, 615);
   const sigW = 220;
   const sigX = (W - sigW) / 2;
-  doc.lineWidth(0.8).strokeColor(NAVY).moveTo(sigX, sigY).lineTo(sigX + sigW, sigY).stroke();
+  doc.lineWidth(0.9).strokeColor(NAVY).moveTo(sigX, sigY).lineTo(sigX + sigW, sigY).stroke();
   doc.font("Helvetica-Bold").fontSize(10.5).fillColor(NAVY)
      .text(row.provider_name || "Profesional de la salud", sigX, sigY + 8, { width: sigW, align: "center" });
   doc.font("Helvetica").fontSize(8.5).fillColor(GRAY)
      .text("Firma y sello del profesional", sigX, sigY + 23, { width: sigW, align: "center" })
      .text("Reg. profesional (ACESS): ____________________", sigX - 20, sigY + 36, { width: sigW + 40, align: "center" });
 
-  /* Pie */
-  const footY = doc.page.height - 60;
-  doc.rect(0, footY, W, 60).fill(LIGHT);
+  doc.save();
+  doc.circle(W - M - 60, sigY - 2, 34).dash(2.5, { space: 2.5 }).lineWidth(0.8).strokeColor(BORDER).stroke();
+  doc.undash();
+  doc.font("Helvetica").fontSize(7).fillColor(GRAY).text("SELLO", W - M - 72, sigY - 6);
+  doc.restore();
+
+  /* Pie dentro del marco */
+  const footY = doc.page.height - 78;
+  doc.rect(24, footY, W - 48, 54).fill(LIGHT);
+  doc.rect(24, footY, W - 48, 1.5).fill(TEAL_SOFT);
   doc.font("Helvetica").fontSize(7.5).fillColor(GRAY).text(
     "Certificado emitido conforme a la normativa del Ministerio de Salud Pública del Ecuador. " +
     "Este documento requiere firma y sello del profesional para su validez legal.",
-    M, footY + 14, { width: CW, align: "center" }
+    M, footY + 12, { width: CW, align: "center" }
   );
   doc.font("Helvetica-Bold").fontSize(7.5).fillColor(TEAL).text(
-    `${row.clinic_name || "AGX Salud"} · Documento generado electrónicamente · Certificado No. ${numCert}`,
-    M, footY + 38, { width: CW, align: "center" }
+    `${row.clinic_name || "AGX Salud"} · Documento generado electrónicamente · Certificado Nº ${numCert}`,
+    M, footY + 36, { width: CW, align: "center" }
   );
 
   doc.end();

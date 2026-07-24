@@ -150,25 +150,33 @@ router.get("/:id/historia.pdf", uuidParams("id"), ah(async (req, res) => {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `inline; filename="historia-${(p.last_name || "paciente").toLowerCase()}.pdf"`);
 
-  const doc = new PDFDocument({ size: "A4", margins: { top: 60, bottom: 60, left: 46, right: 46 } });
+  const doc = new PDFDocument({ size: "A4", margins: { top: 60, bottom: 64, left: 46, right: 46 }, bufferPages: true });
   doc.pipe(res);
   const W = doc.page.width, M = 46, CW = W - M * 2;
+  const TEAL_SOFT = "#5eead4";
 
-  // Cabecera solo en la primera página
+  // Cabecera de la primera página
   doc.rect(0, 0, W, 84).fill(NAVY);
   doc.rect(0, 84, W, 4).fill(TEAL);
+  doc.save().translate(W - M - 20, 22);
+  doc.roundedRect(6, 0, 7, 19, 2).fill(TEAL_SOFT);
+  doc.roundedRect(0, 6, 19, 7, 2).fill(TEAL_SOFT);
+  doc.restore();
   doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(19).text(p.clinic_name || "AGX Salud", M, 20, { width: CW * 0.6 });
-  doc.font("Helvetica").fontSize(9).fillColor("#c7e8e3").text("Historia clínica — documento confidencial", M, 46);
-  doc.font("Helvetica-Bold").fontSize(14).fillColor("#ffffff").text("HISTORIA CLÍNICA", M, 22, { width: CW, align: "right" });
-  doc.font("Helvetica").fontSize(9).fillColor("#c7e8e3").text(`Generada: ${hoy}`, M, 42, { width: CW, align: "right" });
+  doc.font("Helvetica").fontSize(9).fillColor("#8fd8cd").text("Historia clínica — documento confidencial", M, 46);
+  doc.font("Helvetica-Bold").fontSize(13).fillColor("#ffffff").text("HISTORIA CLÍNICA", M, 48, { width: CW - 40, align: "right" });
+  doc.font("Helvetica").fontSize(8.5).fillColor("#8fd8cd").text(`Generada: ${hoy}`, M, 64, { width: CW - 40, align: "right" });
   doc.y = 106;
 
+  // Barra de sección con fondo teal
   const section = (title) => {
-    if (doc.y > doc.page.height - 120) doc.addPage();
-    doc.moveDown(0.6);
-    doc.font("Helvetica-Bold").fontSize(11).fillColor(TEAL).text(title, M, doc.y);
-    doc.moveTo(M, doc.y + 2).lineTo(M + CW, doc.y + 2).lineWidth(0.6).strokeColor(BORDER).stroke();
-    doc.moveDown(0.4);
+    if (doc.y > doc.page.height - 130) doc.addPage();
+    doc.moveDown(0.7);
+    const sy = doc.y;
+    doc.roundedRect(M, sy, CW, 20, 5).fill(TEAL);
+    doc.font("Helvetica-Bold").fontSize(9.5).fillColor("#ffffff").text(title, M + 10, sy + 5.5, { width: CW - 20 });
+    doc.y = sy + 26;
+    doc.fillColor("#0F172A");
   };
   const kv = (label, value) => {
     doc.font("Helvetica-Bold").fontSize(9).fillColor(GRAY).text(label.toUpperCase() + ": ", { continued: true });
@@ -217,19 +225,42 @@ router.get("/:id/historia.pdf", uuidParams("id"), ah(async (req, res) => {
     doc.moveDown(0.5);
   }
 
-  // Signos vitales
+  // Signos vitales — tabla con filas alternadas
   section(`SIGNOS VITALES (últimos ${vitals.rows.length})`);
   if (!vitals.rows.length) {
     doc.font("Helvetica").fontSize(9.5).fillColor(GRAY).text("Sin registros.");
   } else {
-    doc.font("Helvetica-Bold").fontSize(8.5).fillColor(GRAY)
-      .text("Fecha          PA         FC     SpO2    T°      Peso     Glucosa");
-    doc.font("Helvetica").fontSize(9).fillColor("#0F172A");
-    for (const v of vitals.rows) {
-      const f = new Date(v.taken_at).toLocaleDateString("es-EC");
-      const pa = `${v.systolic ?? "—"}/${v.diastolic ?? "—"}`;
-      doc.text(`${f.padEnd(14)} ${pa.padEnd(10)} ${String(v.heart_rate ?? "—").padEnd(6)} ${String(v.spo2 ?? "—").padEnd(7)} ${String(v.temperature_c ?? "—").padEnd(7)} ${String(v.weight_kg ?? "—").padEnd(8)} ${v.glucose_mgdl ?? "—"}`);
-    }
+    const headers = ["Fecha", "PA", "FC", "SpO2", "T °C", "Peso kg", "Glucosa"];
+    const colW = [90, 70, 55, 55, 55, 70, 70];
+    const rowH = 16;
+    let ty = doc.y;
+    const drawHead = () => {
+      doc.rect(M, ty, CW, rowH).fill("#f0fdfa");
+      doc.font("Helvetica-Bold").fontSize(8).fillColor(TEAL);
+      let x = M;
+      headers.forEach((h, i) => { doc.text(h, x + 5, ty + 4.5, { width: colW[i] - 8 }); x += colW[i]; });
+      ty += rowH;
+    };
+    drawHead();
+    doc.font("Helvetica").fontSize(8.5);
+    vitals.rows.forEach((v, i) => {
+      if (ty > doc.page.height - 90) { doc.addPage(); ty = doc.y; drawHead(); doc.font("Helvetica").fontSize(8.5); }
+      if (i % 2 === 1) doc.rect(M, ty, CW, rowH).fill("#f8fafc");
+      const vals = [
+        new Date(v.taken_at).toLocaleDateString("es-EC"),
+        `${v.systolic ?? "—"}/${v.diastolic ?? "—"}`,
+        String(v.heart_rate ?? "—"),
+        v.spo2 != null ? `${v.spo2}%` : "—",
+        String(v.temperature_c ?? "—"),
+        String(v.weight_kg ?? "—"),
+        String(v.glucose_mgdl ?? "—"),
+      ];
+      doc.fillColor("#0F172A");
+      let x = M;
+      vals.forEach((val, ci) => { doc.text(val, x + 5, ty + 4.5, { width: colW[ci] - 8 }); x += colW[ci]; });
+      ty += rowH;
+    });
+    doc.y = ty + 6;
   }
 
   // Recetas
@@ -254,13 +285,23 @@ router.get("/:id/historia.pdf", uuidParams("id"), ah(async (req, res) => {
     }
   }
 
-  // Pie
-  doc.moveDown(1.2);
-  doc.font("Helvetica").fontSize(7.5).fillColor(GRAY).text(
-    "Documento confidencial protegido por la Ley Orgánica de Protección de Datos Personales del Ecuador. " +
-    "Uso exclusivo del paciente y del personal de salud autorizado.",
-    M, doc.y, { width: CW, align: "center" }
-  );
+  // Pie en todas las páginas + numeración
+  // (margen inferior en 0 para poder escribir en la zona del pie sin crear páginas nuevas)
+  const range = doc.bufferedPageRange();
+  for (let i = range.start; i < range.start + range.count; i++) {
+    doc.switchToPage(i);
+    doc.page.margins.bottom = 0;
+    const fy = doc.page.height - 34;
+    doc.moveTo(M, fy - 6).lineTo(M + CW, fy - 6).lineWidth(0.5).strokeColor(BORDER).stroke();
+    doc.font("Helvetica").fontSize(6.8).fillColor(GRAY).text(
+      `${p.first_name} ${p.last_name} · Historia clínica confidencial — Ley Orgánica de Protección de Datos Personales del Ecuador`,
+      M, fy, { width: CW * 0.78, lineBreak: false }
+    );
+    doc.font("Helvetica-Bold").fontSize(6.8).fillColor(TEAL).text(
+      `Página ${i - range.start + 1} de ${range.count}`,
+      M + CW * 0.78, fy, { width: CW * 0.22, align: "right", lineBreak: false }
+    );
+  }
 
   doc.end();
 }));

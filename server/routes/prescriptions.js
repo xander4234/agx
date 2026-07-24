@@ -83,21 +83,17 @@ router.get("/:id", uuidParams("id"), ah(async (req, res) => {
 }));
 
 /* ============================================================
-   PDF de receta — formato basado en la normativa de prescripción
-   del Ministerio de Salud Pública del Ecuador:
-   - Identificación del establecimiento y del profesional
-   - Datos del paciente (nombres, cédula, edad, sexo)
-   - Diagnóstico
-   - Prescripción en Denominación Común Internacional (DCI)
-   - Dosis, frecuencia, duración y cantidad
-   - Fecha de emisión y validez (72 horas)
-   - Firma y sello del profesional prescriptor
+   PDF de receta — formato A5 (media hoja, estándar de recetario)
+   conforme a la normativa de prescripción del MSP Ecuador:
+   identificación del establecimiento y profesional, datos del
+   paciente, diagnóstico (CIE-10), prescripción en DCI con dosis,
+   frecuencia y duración, validez de 72 horas, firma y sello.
    ============================================================ */
 router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   const pr = await q(
     `SELECT pr.*, p.first_name, p.last_name, p.id_number, p.birth_date, p.sex, p.allergies,
             u.full_name AS provider_name, c.name AS clinic_name,
-            e.assessment AS diagnosis
+            e.assessment AS diagnosis, e.cie10_code, e.cie10_desc
      FROM prescriptions pr
      JOIN patients p ON p.id=pr.patient_id
      LEFT JOIN users u ON u.id=pr.provider_id
@@ -114,12 +110,14 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
     [row.id]
   );
 
-  // helpers
+  // paleta
   const NAVY = "#0B1F3B";
   const TEAL = "#0d9488";
+  const TEAL_SOFT = "#5eead4";
   const GRAY = "#64748b";
   const LIGHT = "#f0fdfa";
   const BORDER = "#cbd5e1";
+  const RED = "#dc2626";
 
   const edad = (() => {
     if (!row.birth_date) return "—";
@@ -129,7 +127,7 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
     if (now < new Date(now.getFullYear(), b.getMonth(), b.getDate())) a--;
     return `${a} años`;
   })();
-  const sexo = { male: "Masculino", female: "Femenino", other: "Otro" }[row.sex] || "—";
+  const sexo = { male: "M", female: "F", other: "—" }[row.sex] || "—";
   const emitida = new Date(row.created_at);
   const fecha = emitida.toLocaleDateString("es-EC", { day: "2-digit", month: "long", year: "numeric" });
   const hora = emitida.toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" });
@@ -138,144 +136,144 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `inline; filename="receta-${numReceta}.pdf"`);
 
-  const doc = new PDFDocument({ size: "A4", margin: 0 });
+  // ---- A5: tamaño estándar de recetario (media hoja) ----
+  const doc = new PDFDocument({ size: "A5", margin: 0 });
   doc.pipe(res);
 
-  const W = doc.page.width;   // 595
-  const M = 46;               // margen
-  const CW = W - M * 2;       // ancho útil
+  const W = doc.page.width;    // ~420
+  const H = doc.page.height;   // ~595
+  const M = 26;                // margen
+  const CW = W - M * 2;
 
-  /* ---------- Cabecera ---------- */
-  doc.rect(0, 0, W, 96).fill(NAVY);
-  doc.rect(0, 96, W, 4).fill(TEAL);
+  const drawHeader = () => {
+    doc.rect(0, 0, W, 62).fill(NAVY);
+    doc.rect(0, 62, W, 3).fill(TEAL);
+    // cruz médica decorativa
+    doc.save().translate(W - M - 16, 14);
+    doc.roundedRect(4.5, 0, 5, 14, 1.5).fill(TEAL_SOFT);
+    doc.roundedRect(0, 4.5, 14, 5, 1.5).fill(TEAL_SOFT);
+    doc.restore();
 
-  doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(21).text(row.clinic_name || "AGX Salud", M, 24, { width: CW * 0.6 });
-  doc.font("Helvetica").fontSize(9.5).fillColor("#c7e8e3").text("Sistema de gestión médica AGX Salud", M, 52);
-  doc.text("Ecuador", M, 65);
+    doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(13.5)
+       .text(row.clinic_name || "AGX Salud", M, 12, { width: CW - 40 });
+    doc.font("Helvetica").fontSize(7.5).fillColor("#8fd8cd")
+       .text((row.provider_name ? `${row.provider_name} · ` : "") + "Ecuador", M, 30, { width: CW - 40 });
 
-  doc.font("Helvetica-Bold").fontSize(15).fillColor("#ffffff")
-     .text("RECETA MÉDICA", M, 26, { width: CW, align: "right" });
-  doc.font("Helvetica").fontSize(9.5).fillColor("#c7e8e3")
-     .text(`Receta No. ${numReceta}`, M, 48, { width: CW, align: "right" })
-     .text(`Emitida: ${fecha} · ${hora}`, M, 61, { width: CW, align: "right" })
-     .text("Validez: 72 horas desde su emisión", M, 74, { width: CW, align: "right" });
-
-  /* ---------- Datos del paciente ---------- */
-  let y = 122;
-  doc.font("Helvetica-Bold").fontSize(10.5).fillColor(TEAL).text("DATOS DEL PACIENTE", M, y);
-  y += 16;
-
-  const boxH = 64;
-  doc.roundedRect(M, y, CW, boxH, 6).lineWidth(0.8).strokeColor(BORDER).stroke();
-
-  const col = CW / 3;
-  const field = (label, value, cx, cy) => {
-    doc.font("Helvetica").fontSize(8).fillColor(GRAY).text(label, cx, cy);
-    doc.font("Helvetica-Bold").fontSize(10).fillColor(NAVY).text(value || "—", cx, cy + 11, { width: col - 24 });
+    doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff")
+       .text(`RECETA MÉDICA  Nº ${numReceta}`, M, 44, { continued: false });
+    doc.font("Helvetica").fontSize(7.5).fillColor("#8fd8cd")
+       .text(`${fecha} · ${hora} · válida 72 h`, M, 44, { width: CW, align: "right" });
   };
-  field("PACIENTE", `${row.first_name} ${row.last_name}`, M + 14, y + 10);
-  field("CÉDULA / ID", row.id_number, M + 14 + col, y + 10);
-  field("EDAD", edad, M + 14 + col * 2, y + 10);
-  field("SEXO", sexo, M + 14, y + 38);
-  field("ALERGIAS", row.allergies, M + 14 + col, y + 38);
-  field("PROFESIONAL", row.provider_name, M + 14 + col * 2, y + 38);
+  drawHeader();
 
-  y += boxH + 16;
+  let y = 76;
+  const ensureSpace = (h) => {
+    if (y + h <= H - 40) return;
+    doc.addPage({ size: "A5", margin: 0 });
+    drawHeader();
+    y = 76;
+  };
 
-  /* ---------- Diagnóstico ---------- */
-  doc.font("Helvetica-Bold").fontSize(10.5).fillColor(TEAL).text("DIAGNÓSTICO", M, y);
-  y += 15;
-  doc.font("Helvetica").fontSize(10).fillColor(NAVY)
-     .text(row.diagnosis || "No registrado (ver historia clínica)", M, y, { width: CW });
-  y = doc.y + 14;
+  /* ---------- Paciente (franja compacta) ---------- */
+  const pBoxH = 40;
+  doc.roundedRect(M, y, CW, pBoxH, 6).fill(LIGHT);
+  doc.roundedRect(M, y, CW, pBoxH, 6).lineWidth(0.7).strokeColor(TEAL_SOFT).stroke();
+  const half = CW / 2;
+  const mini = (label, value, cx, cy, w, valueColor = NAVY) => {
+    doc.font("Helvetica").fontSize(6.5).fillColor(GRAY).text(label, cx, cy);
+    doc.font("Helvetica-Bold").fontSize(8.5).fillColor(valueColor)
+       .text(value || "—", cx, cy + 8, { width: w, ellipsis: true, height: 10 });
+  };
+  mini("PACIENTE", `${row.first_name} ${row.last_name}`, M + 10, y + 5, half + 30);
+  mini("CÉDULA", row.id_number, M + half + 55, y + 5, 68);
+  mini("EDAD/SEXO", `${edad} · ${sexo}`, M + CW - 62, y + 5, 56);
+  mini("ALERGIAS", row.allergies || "Ninguna referida", M + 10, y + 22, half + 30, row.allergies ? RED : NAVY);
+  mini("DIAGNÓSTICO (CIE-10)",
+    row.cie10_code ? `${row.cie10_code} — ${row.cie10_desc || row.diagnosis || ""}` : (row.diagnosis || "—"),
+    M + half + 55, y + 22, half - 65);
+  y += pBoxH + 12;
 
-  /* ---------- Prescripción ---------- */
-  doc.font("Helvetica-Bold").fontSize(10.5).fillColor(TEAL)
-     .text("Rx    PRESCRIPCIÓN", M, y);
-  doc.font("Helvetica").fontSize(8).fillColor(GRAY)
-     .text("Medicamentos en Denominación Común Internacional (DCI)", M + 110, y + 2);
-  y += 18;
+  /* ---------- Rx ---------- */
+  doc.font("Times-BoldItalic").fontSize(22).fillColor(TEAL).text("Rx", M, y - 4);
+  doc.font("Helvetica").fontSize(6.5).fillColor(GRAY)
+     .text("PRESCRIPCIÓN EN DENOMINACIÓN COMÚN INTERNACIONAL (DCI)", M + 34, y + 4);
+  doc.moveTo(M + 34, y + 14).lineTo(M + CW, y + 14).lineWidth(0.6).strokeColor(BORDER).stroke();
+  y += 24;
 
-  // tabla
-  const cols = [26, 190, 90, 100, 97]; // # / medicamento / dosis / frecuencia / duración
-  const cx = [M, M + cols[0], M + cols[0] + cols[1], M + cols[0] + cols[1] + cols[2], M + cols[0] + cols[1] + cols[2] + cols[3]];
-  const headH = 20;
-
-  doc.rect(M, y, CW, headH).fill(LIGHT);
-  doc.lineWidth(0.8).strokeColor(BORDER).rect(M, y, CW, headH).stroke();
-  doc.font("Helvetica-Bold").fontSize(8.5).fillColor(NAVY);
-  doc.text("No.", cx[0] + 4, y + 6, { width: cols[0] - 8 });
-  doc.text("MEDICAMENTO (DCI) / CONCENTRACIÓN", cx[1] + 4, y + 6, { width: cols[1] - 8 });
-  doc.text("DOSIS", cx[2] + 4, y + 6, { width: cols[2] - 8 });
-  doc.text("FRECUENCIA", cx[3] + 4, y + 6, { width: cols[3] - 8 });
-  doc.text("DURACIÓN", cx[4] + 4, y + 6, { width: cols[4] - 8 });
-  y += headH;
-
-  doc.font("Helvetica").fontSize(9.5);
-  const rows = items.rows.length ? items.rows : [{ medication: "—", dose: "—", frequency: "—", duration: "—", notes: null }];
-  rows.forEach((it, idx) => {
+  const meds = items.rows.length ? items.rows : [{ medication: "—" }];
+  meds.forEach((it, idx) => {
     const med = it.medication || "—";
-    const medH = doc.heightOfString(med, { width: cols[1] - 8 });
-    const noteH = it.notes ? doc.heightOfString(`Nota: ${it.notes}`, { width: cols[1] - 8 }) + 3 : 0;
-    const rowH = Math.max(24, medH + noteH + 12);
+    const detail = [it.dose, it.frequency, it.duration].filter(Boolean).join("  ·  ");
+    const medH = doc.font("Helvetica-Bold").fontSize(9.5).heightOfString(med, { width: CW - 30 });
+    const detH = detail ? doc.font("Helvetica").fontSize(8).heightOfString(detail, { width: CW - 30 }) : 0;
+    const noteH = it.notes ? doc.font("Helvetica-Oblique").fontSize(7).heightOfString(it.notes, { width: CW - 30 }) : 0;
+    const blockH = medH + (detH ? detH + 2 : 0) + (noteH ? noteH + 2 : 0) + 10;
+    ensureSpace(blockH);
 
-    doc.lineWidth(0.6).strokeColor(BORDER).rect(M, y, CW, rowH).stroke();
-    doc.fillColor(NAVY);
-    doc.text(String(idx + 1), cx[0] + 4, y + 7, { width: cols[0] - 8 });
-    doc.font("Helvetica-Bold").text(med, cx[1] + 4, y + 7, { width: cols[1] - 8 });
-    if (it.notes) doc.font("Helvetica").fontSize(8).fillColor(GRAY).text(`Nota: ${it.notes}`, cx[1] + 4, y + 7 + medH + 2, { width: cols[1] - 8 });
-    doc.font("Helvetica").fontSize(9.5).fillColor(NAVY);
-    doc.text(it.dose || "—", cx[2] + 4, y + 7, { width: cols[2] - 8 });
-    doc.text(it.frequency || "—", cx[3] + 4, y + 7, { width: cols[3] - 8 });
-    doc.text(it.duration || "—", cx[4] + 4, y + 7, { width: cols[4] - 8 });
-    y += rowH;
+    // número en círculo
+    doc.circle(M + 7, y + 6, 7).lineWidth(0.8).strokeColor(TEAL).stroke();
+    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(TEAL)
+       .text(String(idx + 1), M, y + 3, { width: 14, align: "center" });
+
+    doc.font("Helvetica-Bold").fontSize(9.5).fillColor(NAVY).text(med, M + 20, y, { width: CW - 30 });
+    let yy = y + medH;
+    if (detail) {
+      doc.font("Helvetica").fontSize(8).fillColor(GRAY).text(detail, M + 20, yy + 2, { width: CW - 30 });
+      yy += detH + 2;
+    }
+    if (it.notes) {
+      doc.font("Helvetica-Oblique").fontSize(7).fillColor(GRAY).text(it.notes, M + 20, yy + 2, { width: CW - 30 });
+      yy += noteH + 2;
+    }
+    // separador punteado
+    doc.save().moveTo(M + 20, yy + 5).lineTo(M + CW, yy + 5).dash(1.5, { space: 2.5 }).lineWidth(0.5).strokeColor(BORDER).stroke().undash().restore();
+    y = yy + 10;
   });
 
-  y += 16;
-
   /* ---------- Indicaciones ---------- */
-  doc.font("Helvetica-Bold").fontSize(10.5).fillColor(TEAL).text("INDICACIONES PARA EL PACIENTE", M, y);
-  y += 15;
-  const indic = row.instructions || "Seguir la prescripción indicada. Ante cualquier reacción adversa, suspenda el medicamento y comuníquese con su médico.";
-  const indicH = Math.max(34, doc.heightOfString(indic, { width: CW - 24 }) + 16);
-  doc.roundedRect(M, y, CW, indicH, 6).lineWidth(0.8).strokeColor(BORDER).stroke();
-  doc.font("Helvetica").fontSize(9.5).fillColor(NAVY).text(indic, M + 12, y + 8, { width: CW - 24 });
-  y += indicH + 12;
+  const indic = row.instructions ||
+    "Seguir la prescripción indicada. Ante cualquier reacción adversa, suspenda el medicamento y consulte a su médico.";
+  const indicH = doc.font("Helvetica").fontSize(8).heightOfString(indic, { width: CW - 20 }) + 20;
+  ensureSpace(indicH + 14);
+  doc.roundedRect(M, y, CW, indicH, 5).fill("#fafcfc");
+  doc.roundedRect(M, y, CW, indicH, 5).lineWidth(0.6).strokeColor(BORDER).stroke();
+  doc.font("Helvetica-Bold").fontSize(6.5).fillColor(TEAL).text("INDICACIONES", M + 10, y + 6);
+  doc.font("Helvetica").fontSize(8).fillColor(NAVY).text(indic, M + 10, y + 15, { width: CW - 20 });
+  y += indicH + 10;
 
-  /* ---------- Advertencia ---------- */
-  doc.font("Helvetica").fontSize(8).fillColor(GRAY).text(
-    "No se automedique. Mantenga los medicamentos fuera del alcance de los niños. Complete el tratamiento aunque los síntomas desaparezcan.",
-    M, y, { width: CW }
-  );
+  /* ---------- Firma y sello (anclados abajo) ---------- */
+  const sigZoneY = Math.max(y + 12, H - 118);
+  if (sigZoneY + 90 > H) { ensureSpace(120); }
+  const sy = Math.max(y + 12, H - 118);
 
-  /* ---------- Firma ---------- */
-  const sigY = Math.max(y + 60, 660);
-  const sigW = 200;
-  doc.lineWidth(0.8).strokeColor(NAVY)
-     .moveTo(M, sigY).lineTo(M + sigW, sigY).stroke();
-  doc.font("Helvetica-Bold").fontSize(9.5).fillColor(NAVY).text(row.provider_name || "Profesional prescriptor", M, sigY + 6, { width: sigW });
-  doc.font("Helvetica").fontSize(8.5).fillColor(GRAY)
-     .text("Firma y sello del profesional", M, sigY + 20, { width: sigW })
-     .text("Reg. profesional (ACESS): ____________________", M, sigY + 33, { width: sigW + 60 });
-
-  // sello (círculo punteado a la derecha)
+  // sello punteado a la izquierda
   doc.save();
-  doc.circle(W - M - 70, sigY - 4, 38).dash(3, { space: 3 }).lineWidth(0.8).strokeColor(BORDER).stroke();
+  doc.circle(M + 34, sy + 28, 26).dash(2.5, { space: 2.5 }).lineWidth(0.7).strokeColor(BORDER).stroke();
   doc.undash();
-  doc.font("Helvetica").fontSize(7.5).fillColor(GRAY).text("SELLO", W - M - 84, sigY - 8);
+  doc.font("Helvetica").fontSize(6).fillColor(GRAY).text("SELLO", M + 22, sy + 25);
   doc.restore();
 
+  // línea de firma a la derecha
+  const sigW = 150;
+  const sigX = W - M - sigW;
+  doc.moveTo(sigX, sy + 38).lineTo(sigX + sigW, sy + 38).lineWidth(0.8).strokeColor(NAVY).stroke();
+  doc.font("Helvetica-Bold").fontSize(8).fillColor(NAVY)
+     .text(row.provider_name || "Profesional prescriptor", sigX, sy + 42, { width: sigW, align: "center" });
+  doc.font("Helvetica").fontSize(6.5).fillColor(GRAY)
+     .text("Firma y sello del profesional", sigX, sy + 53, { width: sigW, align: "center" })
+     .text("Reg. ACESS: ______________________", sigX, sy + 62, { width: sigW, align: "center" });
+
   /* ---------- Pie ---------- */
-  const footY = doc.page.height - 60;
-  doc.rect(0, footY, W, 60).fill(LIGHT);
-  doc.font("Helvetica").fontSize(7.5).fillColor(GRAY).text(
-    "Receta elaborada conforme a la normativa de prescripción del Ministerio de Salud Pública del Ecuador (prescripción en DCI, letra legible, validez de 72 horas). " +
-    "Este documento requiere firma y sello del profesional prescriptor para su validez legal.",
-    M, footY + 12, { width: CW, align: "center" }
+  doc.page.margins.bottom = 0;
+  doc.rect(0, H - 26, W, 26).fill(LIGHT);
+  doc.rect(0, H - 26, W, 1.5).fill(TEAL_SOFT);
+  doc.font("Helvetica").fontSize(5.6).fillColor(GRAY).text(
+    "Prescripción en DCI · Normativa MSP Ecuador · Validez 72 horas · No se automedique",
+    M, H - 19, { width: CW, align: "center", lineBreak: false }
   );
-  doc.font("Helvetica-Bold").fontSize(7.5).fillColor(TEAL).text(
-    `${row.clinic_name || "AGX Salud"} · Documento generado electrónicamente · Receta No. ${numReceta}`,
-    M, footY + 38, { width: CW, align: "center" }
+  doc.font("Helvetica-Bold").fontSize(5.6).fillColor(TEAL).text(
+    `${row.clinic_name || "AGX Salud"} · Receta Nº ${numReceta}`,
+    M, H - 11, { width: CW, align: "center", lineBreak: false }
   );
 
   doc.end();
