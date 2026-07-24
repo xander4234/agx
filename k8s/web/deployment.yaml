@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/xander4234/agx/frontend:c7d1792a0591a13bbb164003156df040ef4a2a4f
+          image: ghcr.io/xander4234/agx/frontend:9117cd55a4a3cb8388fe04eac4860ec830c9199c
           imagePullPolicy: Always
           ports:
             - containerPort: 80
