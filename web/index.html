@@ -1041,11 +1041,15 @@
         <div class="col-main">
           <div class="card">
             <h2 class="card-title">⚙️ Mi consultorio</h2>
-            <p class="card-sub">Este nombre aparece en recetas y certificados PDF</p>
+            <p class="card-sub">Estos datos aparecen en la cabecera de recetas, certificados e historias PDF</p>
             <form class="form" id="clinicForm">
               <label>Nombre del consultorio</label>
               <input id="clinicName" placeholder="Consultorio Dr. Pérez" required minlength="3" />
-              <button class="btn btn-primary" type="submit">Guardar nombre</button>
+              <label>Dirección</label>
+              <input id="clinicAddress" placeholder="Av. 9 de Octubre 1234 y Malecón, Guayaquil" />
+              <label>Teléfono</label>
+              <input id="clinicPhone" placeholder="0991234567 / 042345678" />
+              <button class="btn btn-primary" type="submit">Guardar datos</button>
               <div class="muted" id="clinicMsg"></div>
             </form>
           </div>

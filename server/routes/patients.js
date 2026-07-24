@@ -110,7 +110,7 @@ router.delete("/:id", uuidParams("id"), requireRole("admin"), ah(async (req, res
    ============================================================ */
 router.get("/:id/historia.pdf", uuidParams("id"), ah(async (req, res) => {
   const pr = await q(
-    `SELECT p.*, c.name AS clinic_name FROM patients p
+    `SELECT p.*, c.name AS clinic_name, c.address AS clinic_address, c.phone AS clinic_phone FROM patients p
      JOIN clinics c ON c.id=p.clinic_id
      WHERE p.id=$1 AND p.clinic_id=$2`,
     [req.params.id, req.user.clinicId]
@@ -162,8 +162,11 @@ router.get("/:id/historia.pdf", uuidParams("id"), ah(async (req, res) => {
   doc.roundedRect(6, 0, 7, 19, 2).fill(TEAL_SOFT);
   doc.roundedRect(0, 6, 19, 7, 2).fill(TEAL_SOFT);
   doc.restore();
-  doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(19).text(p.clinic_name || "AGX Salud", M, 20, { width: CW * 0.6 });
-  doc.font("Helvetica").fontSize(9).fillColor("#8fd8cd").text("Historia clínica — documento confidencial", M, 46);
+  const contacto = [p.clinic_address, p.clinic_phone ? `Tel: ${p.clinic_phone}` : null].filter(Boolean).join("  ·  ");
+  doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(19).text(p.clinic_name || "AGX Salud", M, 18, { width: CW * 0.6 });
+  doc.font("Helvetica").fontSize(8.5).fillColor("#8fd8cd")
+     .text("Historia clínica — documento confidencial", M, 42)
+     .text(contacto || "Ecuador", M, 54, { width: CW * 0.6 });
   doc.font("Helvetica-Bold").fontSize(13).fillColor("#ffffff").text("HISTORIA CLÍNICA", M, 48, { width: CW - 40, align: "right" });
   doc.font("Helvetica").fontSize(8.5).fillColor("#8fd8cd").text(`Generada: ${hoy}`, M, 64, { width: CW - 40, align: "right" });
   doc.y = 106;

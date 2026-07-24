@@ -137,6 +137,8 @@ async function loadClinicConfig(){
     CLINIC = await api("/clinic");
     $("#clinicChip").textContent = CLINIC.name || "AGX Salud";
     $("#clinicName").value = CLINIC.name || "";
+    $("#clinicAddress") && ($("#clinicAddress").value = CLINIC.address || "");
+    $("#clinicPhone") && ($("#clinicPhone").value = CLINIC.phone || "");
   }catch{}
   $("#meName") && ($("#meName").textContent = me?.name || "—");
   $("#meRole") && ($("#meRole").textContent = ({superadmin:"Superadministrador",admin:"Administrador",provider:"Médico",staff:"Personal"})[me?.role] || me?.role || "—");
@@ -240,10 +242,14 @@ $("#clinicForm")?.addEventListener("submit", async (e)=>{
   const msg = $("#clinicMsg");
   msg.textContent = "Guardando…";
   try{
-    const r = await api("/clinic", { method:"PUT", body: JSON.stringify({ name: $("#clinicName").value.trim() }) });
+    const r = await api("/clinic", { method:"PUT", body: JSON.stringify({
+      name: $("#clinicName").value.trim(),
+      address: $("#clinicAddress").value.trim() || null,
+      phone: $("#clinicPhone").value.trim() || null,
+    }) });
     CLINIC = r;
     $("#clinicChip").textContent = r.name;
-    msg.textContent = "Nombre actualizado ✅ (saldrá en los nuevos PDF)";
+    msg.textContent = "Datos actualizados ✅ (saldrán en los nuevos PDF)";
   }catch{ msg.textContent = "No se pudo guardar (solo administradores)."; }
 });
 

@@ -92,7 +92,7 @@ router.get("/:id", uuidParams("id"), ah(async (req, res) => {
 router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   const pr = await q(
     `SELECT pr.*, p.first_name, p.last_name, p.id_number, p.birth_date, p.sex, p.allergies,
-            u.full_name AS provider_name, c.name AS clinic_name,
+            u.full_name AS provider_name, c.name AS clinic_name, c.address AS clinic_address, c.phone AS clinic_phone,
             e.assessment AS diagnosis, e.cie10_code, e.cie10_desc
      FROM prescriptions pr
      JOIN patients p ON p.id=pr.patient_id
@@ -145,33 +145,38 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   const M = 26;                // margen
   const CW = W - M * 2;
 
+  const contacto = [row.clinic_address, row.clinic_phone ? `Tel: ${row.clinic_phone}` : null]
+    .filter(Boolean).join("  ·  ");
+
   const drawHeader = () => {
-    doc.rect(0, 0, W, 62).fill(NAVY);
-    doc.rect(0, 62, W, 3).fill(TEAL);
+    // cabecera clara y suave (mejor lectura y menos tinta al imprimir)
+    doc.rect(0, 0, W, 68).fill(LIGHT);
+    doc.rect(0, 68, W, 2).fill(TEAL);
     // cruz médica decorativa
     doc.save().translate(W - M - 16, 14);
-    doc.roundedRect(4.5, 0, 5, 14, 1.5).fill(TEAL_SOFT);
-    doc.roundedRect(0, 4.5, 14, 5, 1.5).fill(TEAL_SOFT);
+    doc.roundedRect(4.5, 0, 5, 14, 1.5).fill(TEAL);
+    doc.roundedRect(0, 4.5, 14, 5, 1.5).fill(TEAL);
     doc.restore();
 
-    doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(13.5)
-       .text(row.clinic_name || "AGX Salud", M, 12, { width: CW - 40 });
-    doc.font("Helvetica").fontSize(7.5).fillColor("#8fd8cd")
-       .text((row.provider_name ? `${row.provider_name} · ` : "") + "Ecuador", M, 30, { width: CW - 40 });
+    doc.fillColor(NAVY).font("Helvetica-Bold").fontSize(13.5)
+       .text(row.clinic_name || "AGX Salud", M, 11, { width: CW - 40 });
+    doc.font("Helvetica").fontSize(7.5).fillColor(GRAY)
+       .text(row.provider_name || "", M, 28, { width: CW - 40 })
+       .text(contacto || "Ecuador", M, 38, { width: CW - 40 });
 
-    doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff")
-       .text(`RECETA MÉDICA  Nº ${numReceta}`, M, 44, { continued: false });
-    doc.font("Helvetica").fontSize(7.5).fillColor("#8fd8cd")
-       .text(`${fecha} · ${hora} · válida 72 h`, M, 44, { width: CW, align: "right" });
+    doc.font("Helvetica-Bold").fontSize(9).fillColor(TEAL)
+       .text(`RECETA MÉDICA  Nº ${numReceta}`, M, 51, { continued: false });
+    doc.font("Helvetica").fontSize(7.5).fillColor(GRAY)
+       .text(`${fecha} · ${hora} · válida 72 h`, M, 52, { width: CW, align: "right" });
   };
   drawHeader();
 
-  let y = 76;
+  let y = 82;
   const ensureSpace = (h) => {
     if (y + h <= H - 40) return;
     doc.addPage({ size: "A5", margin: 0 });
     drawHeader();
-    y = 76;
+    y = 82;
   };
 
   /* ---------- Paciente (franja compacta) ---------- */
@@ -246,11 +251,10 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   if (sigZoneY + 90 > H) { ensureSpace(120); }
   const sy = Math.max(y + 12, H - 118);
 
-  // sello punteado a la izquierda
+  // espacio para el sello (círculo punteado, sin texto)
   doc.save();
   doc.circle(M + 34, sy + 28, 26).dash(2.5, { space: 2.5 }).lineWidth(0.7).strokeColor(BORDER).stroke();
   doc.undash();
-  doc.font("Helvetica").fontSize(6).fillColor(GRAY).text("SELLO", M + 22, sy + 25);
   doc.restore();
 
   // línea de firma a la derecha

@@ -84,7 +84,7 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   await ensureTable();
   const r = await q(
     `SELECT ce.*, p.first_name, p.last_name, p.id_number, p.birth_date, p.sex,
-            u.full_name AS provider_name, c.name AS clinic_name,
+            u.full_name AS provider_name, c.name AS clinic_name, c.address AS clinic_address, c.phone AS clinic_phone,
             a.starts_at AS attended_at
      FROM certificates ce
      JOIN patients p ON p.id=ce.patient_id
@@ -142,12 +142,14 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   doc.roundedRect(0, 8, 25, 9, 2.5).fill(TEAL_SOFT);
   doc.restore();
 
-  doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(20).text(row.clinic_name || "AGX Salud", M, 42, { width: CW * 0.65 });
+  const contacto = [row.clinic_address, row.clinic_phone ? `Tel: ${row.clinic_phone}` : null]
+    .filter(Boolean).join("  ·  ");
+  doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(20).text(row.clinic_name || "AGX Salud", M, 40, { width: CW * 0.75 });
   doc.font("Helvetica").fontSize(9).fillColor("#8fd8cd")
-     .text(row.provider_name || "Profesional de la salud", M, 68)
-     .text("Ecuador", M, 81);
+     .text(row.provider_name || "Profesional de la salud", M, 66)
+     .text(contacto || "Ecuador", M, 79, { width: CW * 0.8 });
   doc.font("Helvetica").fontSize(8.5).fillColor("#8fd8cd")
-     .text(`Nº ${numCert} · ${fechaEmision}`, M, 95, { width: CW, align: "left" });
+     .text(`Nº ${numCert} · ${fechaEmision}`, M, 93, { width: CW, align: "left" });
 
   /* Título */
   let y = 148;
@@ -224,7 +226,6 @@ router.get("/:id/pdf", uuidParams("id"), ah(async (req, res) => {
   doc.save();
   doc.circle(W - M - 60, sigY - 2, 34).dash(2.5, { space: 2.5 }).lineWidth(0.8).strokeColor(BORDER).stroke();
   doc.undash();
-  doc.font("Helvetica").fontSize(7).fillColor(GRAY).text("SELLO", W - M - 72, sigY - 6);
   doc.restore();
 
   /* Pie dentro del marco */

@@ -8,16 +8,21 @@ router.use(requireAuth);
 
 // Datos de MI consultorio
 router.get("/", ah(async (req, res) => {
-  const r = await q("SELECT id, name, created_at FROM clinics WHERE id=$1", [req.user.clinicId]);
+  const r = await q("SELECT id, name, address, phone, created_at FROM clinics WHERE id=$1", [req.user.clinicId]);
   if (!r.rows[0]) return res.status(404).json({ error: "not_found" });
   res.json(r.rows[0]);
 }));
 
-// Renombrar MI consultorio — solo admin
+// Editar MI consultorio (nombre, dirección, teléfono) — solo admin
 router.put("/", requireRole("admin"), ah(async (req, res) => {
   const name = s(req.body?.name, 120);
+  const address = s(req.body?.address, 200);
+  const phone = s(req.body?.phone, 40);
   if (!name || name.length < 3) return res.status(400).json({ error: "invalid_name" });
-  const r = await q("UPDATE clinics SET name=$1 WHERE id=$2 RETURNING id, name", [name, req.user.clinicId]);
+  const r = await q(
+    "UPDATE clinics SET name=$1, address=$2, phone=$3 WHERE id=$4 RETURNING id, name, address, phone",
+    [name, address, phone, req.user.clinicId]
+  );
   res.json(r.rows[0]);
 }));
 

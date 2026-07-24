@@ -18,6 +18,11 @@ export function ensureUpgrades() {
 }
 
 async function run() {
+  // ---- Dirección y teléfono del consultorio (salen en los PDF) ----
+  await q(`ALTER TABLE clinics
+    ADD COLUMN IF NOT EXISTS address TEXT,
+    ADD COLUMN IF NOT EXISTS phone   TEXT`);
+
   // ---- Antecedentes completos del paciente (formato historia clínica MSP) ----
   await q(`ALTER TABLE patients
     ADD COLUMN IF NOT EXISTS family_history   TEXT,
