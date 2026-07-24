@@ -1,19 +1,80 @@
+# ============================================================
+# AGX Salud — Instalación LOCAL en la máquina del médico
+# Levanta TODO (base de datos + servidor + web) con un comando:
+#     docker compose up -d
+# Luego abre:  http://localhost:8080
+# Los datos quedan en la propia computadora (no salen a internet).
+# ============================================================
 services:
   db:
     image: postgres:16
-    container_name: agx_health_db
+    container_name: agx_db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: agx
       POSTGRES_PASSWORD: agxpass
       POSTGRES_DB: agx_health
-    ports:
-      - "5435:5432"
     volumes:
-      - agx_health_pgdata:/var/lib/postgresql/data
+      - agx_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U agx -d agx_health"]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  server-service:
+    build: ./server
+    container_name: agx_server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: agx
+      PGPASSWORD: agxpass
+      PGDATABASE: agx_health
+      JWT_SECRET: cambia_esta_clave_por_una_larga_y_secreta
+      # OPENAI_API_KEY: ""   # opcional, para el triage con IA
+    volumes:
+      - agx_uploads:/app/uploads      # exámenes/archivos — se conservan siempre
+    # Crea las tablas + superadmin (idempotente) y luego arranca el servidor
+    command: sh -c "node db_init.js && node server.js"
+
+  web:
+    build: ./web
+    container_name: agx_web
+    restart: unless-stopped
+    depends_on:
+      - server-service
+    ports:
+      - "8080:80"      # abre http://localhost:8080 en el navegador del médico
+
+  # Respaldo automático: cada 24h guarda la base comprimida en la carpeta ./respaldos
+  # y conserva los últimos 14 respaldos. El médico solo copia esa carpeta a un USB.
+  backup:
+    image: postgres:16
+    container_name: agx_backup
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: agxpass
+    volumes:
+      - ./respaldos:/backups
+    entrypoint: >
+      sh -c 'while true; do
+        FECHA=$$(date +%Y-%m-%d_%H%M);
+        pg_dump -h db -U agx agx_health | gzip > /backups/respaldo-$$FECHA.sql.gz &&
+        echo "Respaldo creado: respaldo-$$FECHA.sql.gz";
+        ls -1t /backups/respaldo-*.sql.gz 2>/dev/null | tail -n +15 | xargs -r rm -f;
+        sleep 86400;
+      done'
+
 volumes:
-  agx_health_pgdata:
+  agx_pgdata:     # base de datos persistente
+  agx_uploads:    # archivos subidos persistentes

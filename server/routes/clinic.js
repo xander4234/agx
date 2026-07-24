@@ -21,6 +21,19 @@ router.put("/", requireRole("admin"), ah(async (req, res) => {
   res.json(r.rows[0]);
 }));
 
+/* ================= auditoría de accesos ================= */
+
+// Últimos 150 eventos del consultorio — solo admin
+router.get("/audit", requireRole("admin"), ah(async (req, res) => {
+  const r = await q(
+    `SELECT user_name, method, path, ip, created_at
+     FROM audit_log WHERE clinic_id=$1
+     ORDER BY created_at DESC LIMIT 150`,
+    [req.user.clinicId]
+  );
+  res.json(r.rows);
+}));
+
 /* ================= usuarios del consultorio ================= */
 
 // Listar usuarios de MI consultorio — solo admin

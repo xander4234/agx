@@ -96,6 +96,7 @@
       <button data-view="pacientes" class="tab">Pacientes</button>
       <button data-view="historia" class="tab">Historia clínica</button>
       <button data-view="recetas" class="tab">Recetas</button>
+      <button data-view="caja" class="tab">💰 Caja</button>
       <button data-view="inmediata" class="tab">Atención inmediata</button>
       <button data-view="chat" class="tab">Chat</button>
       <button data-view="ia" class="tab">IA triage</button>
@@ -214,6 +215,12 @@
             </div>
           </div>
 
+          <div class="card hidden" id="birthdayCard">
+            <h2 class="card-title">🎂 Cumpleaños de hoy</h2>
+            <p class="card-sub">Un saludo fideliza a tus pacientes</p>
+            <div id="birthdayList"></div>
+          </div>
+
           <div class="card tip-card" id="tipCard">
             <div class="tip-icon" id="tipIcon">💧</div>
             <h2 class="card-title" style="font-size:18px;">Consejo de salud</h2>
@@ -304,8 +311,23 @@
                 <h2 class="card-title">Citas</h2>
                 <p class="card-sub">Crear, confirmar y cambiar estados</p>
               </div>
+              <div class="seg" id="agendaViewToggle">
+                <button data-amode="list" class="is-on">📋 Lista</button>
+                <button data-amode="week">📅 Semana</button>
+              </div>
             </div>
             <div id="apptTable"></div>
+            <div id="weekCalWrap" class="hidden">
+              <div class="wk-nav">
+                <button class="btn btn-outline btn-sm" id="wkPrev">‹ Anterior</button>
+                <b id="wkLabel"></b>
+                <div>
+                  <button class="btn btn-outline btn-sm" id="wkToday">Hoy</button>
+                  <button class="btn btn-outline btn-sm" id="wkNext">Siguiente ›</button>
+                </div>
+              </div>
+              <div id="weekCal"></div>
+            </div>
           </div>
         </div>
         <div class="col-side">
@@ -377,6 +399,14 @@
               </div>
               <label>Alergias</label><input id="pAllergies" placeholder="Ej: Penicilina" />
               <label>Condiciones</label><input id="pConditions" placeholder="Ej: Hipertensión" />
+              <div class="grid2">
+                <div><label>Antec. familiares</label><input id="pFamily" placeholder="Ej: madre diabética" /></div>
+                <div><label>Antec. quirúrgicos</label><input id="pSurgical" placeholder="Ej: cesárea 2020" /></div>
+              </div>
+              <div class="grid2">
+                <div><label>Hábitos</label><input id="pHabits" placeholder="Ej: no fuma" /></div>
+                <div><label>Medicación habitual</label><input id="pMeds" placeholder="Ej: metformina" /></div>
+              </div>
               <label>Notas</label><textarea id="pNotes" placeholder="Observaciones"></textarea>
               <button class="btn btn-primary btn-block" type="submit">Guardar paciente</button>
               <div class="muted" id="patientMsg"></div>
@@ -407,7 +437,10 @@
                   <h2 class="card-title" id="hcName">—</h2>
                   <p class="card-sub">Ficha del paciente</p>
                 </div>
-                <button class="btn btn-outline btn-sm" id="hcEditBtn">✏️ Editar ficha</button>
+                <div class="row-actions">
+                  <button class="btn btn-outline btn-sm" id="hcPdfBtn">📄 Historia completa PDF</button>
+                  <button class="btn btn-outline btn-sm" id="hcEditBtn">✏️ Editar ficha</button>
+                </div>
               </div>
               <div class="kv-grid" id="hcInfo"></div>
 
@@ -434,7 +467,11 @@
                   </div>
                 </div>
                 <label>Alergias</label><input id="eAllergies" />
-                <label>Condiciones</label><input id="eConditions" />
+                <label>Condiciones / antecedentes patológicos</label><input id="eConditions" />
+                <label>Antecedentes familiares</label><input id="eFamily" placeholder="Ej: madre diabética, padre hipertenso" />
+                <label>Antecedentes quirúrgicos</label><input id="eSurgical" placeholder="Ej: apendicectomía 2019" />
+                <label>Hábitos (tabaco, alcohol, actividad física)</label><input id="eHabits" placeholder="Ej: no fuma, alcohol ocasional" />
+                <label>Medicación habitual</label><input id="eMeds" placeholder="Ej: losartán 50mg c/día" />
                 <label>Notas</label><textarea id="eNotes"></textarea>
                 <div class="grid2">
                   <button class="btn btn-primary" type="submit">Guardar cambios</button>
@@ -442,6 +479,16 @@
                 </div>
                 <div class="muted" id="hcEditMsg"></div>
               </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">📈 Evolución del paciente</h2>
+                  <p class="card-sub">Peso, presión arterial y glucosa a lo largo del tiempo</p>
+                </div>
+              </div>
+              <div class="evo-grid" id="evoCharts"></div>
             </div>
 
             <div class="card">
@@ -529,6 +576,16 @@
             <h2 class="card-title">Nueva receta</h2>
             <p class="card-sub">Emitir receta al paciente</p>
             <form class="form" id="rxForm">
+              <div class="grid2">
+                <div>
+                  <label>Plantilla de receta</label>
+                  <select id="rxTplSel"><option value="">— Sin plantilla —</option></select>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:8px;">
+                  <button class="btn btn-outline btn-sm" type="button" id="rxTplApply">Aplicar</button>
+                  <button class="btn btn-outline btn-sm" type="button" id="rxTplSave" title="Guarda los medicamentos actuales como plantilla">💾</button>
+                </div>
+              </div>
               <label>Paciente</label>
               <select id="rxPatient" required></select>
               <label>Cita asociada</label>
@@ -578,12 +635,31 @@
             <h2 class="card-title">Nota clínica (SOAP)</h2>
             <p class="card-sub">Registro de la consulta</p>
             <form class="form" id="cSoapForm">
+              <div class="grid2">
+                <div>
+                  <label>Plantilla de diagnóstico</label>
+                  <select id="dxTplSel"><option value="">— Sin plantilla —</option></select>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:8px;">
+                  <button class="btn btn-outline btn-sm" type="button" id="dxTplApply">Aplicar</button>
+                  <button class="btn btn-outline btn-sm" type="button" id="dxTplSave" title="Guarda evaluación + plan + CIE-10 actuales como plantilla">💾 Guardar como plantilla</button>
+                </div>
+              </div>
               <label>Subjetivo (lo que refiere el paciente)</label>
               <textarea id="cSoapS"></textarea>
               <label>Objetivo (hallazgos / examen físico)</label>
               <textarea id="cSoapO"></textarea>
               <label>Evaluación</label>
               <textarea id="cSoapA"></textarea>
+              <label>Diagnóstico CIE-10 (escribe para buscar)</label>
+              <div class="cie-box">
+                <input id="cCieSearch" placeholder="Ej: faringitis, J02, hipertensión…" autocomplete="off" />
+                <div class="cie-list hidden" id="cCieList"></div>
+              </div>
+              <div id="cCieChip" class="hidden cie-chip">
+                <span id="cCieChipTxt"></span>
+                <button type="button" id="cCieClear" title="Quitar diagnóstico">✕</button>
+              </div>
               <label>Plan</label>
               <textarea id="cSoapP"></textarea>
               <button class="btn btn-primary" type="submit">Guardar nota</button>
@@ -652,6 +728,48 @@
           </div>
 
           <div class="card">
+            <h2 class="card-title">💵 Cobro de la consulta</h2>
+            <p class="card-sub">Registra el pago en caja</p>
+            <form class="form" id="cPayForm">
+              <div class="grid2">
+                <div><label>Monto (USD)</label><input id="cPayAmount" type="number" step="0.01" min="0" placeholder="25.00" required /></div>
+                <div><label>Método</label>
+                  <select id="cPayMethod">
+                    <option value="cash">Efectivo</option>
+                    <option value="transfer">Transferencia</option>
+                    <option value="card">Tarjeta</option>
+                    <option value="other">Otro</option>
+                  </select>
+                </div>
+              </div>
+              <label>Estado</label>
+              <select id="cPayStatus">
+                <option value="paid">Pagado</option>
+                <option value="pending">Pendiente (por cobrar)</option>
+              </select>
+              <button class="btn btn-primary btn-block" type="submit">💵 Registrar cobro</button>
+              <div class="muted" id="cPayMsg"></div>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">🔁 Próximo control</h2>
+            <p class="card-sub">Agenda el seguimiento antes de que el paciente se vaya</p>
+            <form class="form" id="cFollowForm">
+              <label>Fecha y hora del control</label>
+              <input id="cFollowDate" type="datetime-local" required />
+              <button class="btn btn-primary btn-block" type="submit">📅 Agendar control</button>
+              <div class="muted" id="cFollowMsg"></div>
+            </form>
+            <div class="quick-follow">
+              <span class="muted">Rápido:</span>
+              <button class="btn btn-outline btn-sm" data-follow="7">en 7 días</button>
+              <button class="btn btn-outline btn-sm" data-follow="15">en 15 días</button>
+              <button class="btn btn-outline btn-sm" data-follow="30">en 1 mes</button>
+            </div>
+          </div>
+
+          <div class="card">
             <h2 class="card-title">📜 Certificado médico</h2>
             <p class="card-sub">Reposo y constancia de atención</p>
             <form class="form" id="cCertForm">
@@ -663,6 +781,111 @@
               <textarea id="certObs" placeholder="Ej: Control en 72 horas…"></textarea>
               <button class="btn btn-primary btn-block" type="submit">📜 Emitir certificado PDF</button>
               <div class="muted" id="certMsg"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CAJA Y ESTADÍSTICAS ==================== -->
+    <section id="view-caja" class="view hidden">
+      <div class="cash-grid">
+        <div class="cash-card">
+          <div class="cash-ico">📆</div>
+          <div class="cash-label">Ingresos de hoy</div>
+          <div class="cash-value" id="cashToday">$0.00</div>
+          <div class="muted" id="cashTodayCount"></div>
+        </div>
+        <div class="cash-card">
+          <div class="cash-ico">📈</div>
+          <div class="cash-label">Ingresos del mes</div>
+          <div class="cash-value" id="cashMonth">$0.00</div>
+        </div>
+        <div class="cash-card warn">
+          <div class="cash-ico">⏳</div>
+          <div class="cash-label">Por cobrar</div>
+          <div class="cash-value" id="cashPending">$0.00</div>
+        </div>
+        <div class="cash-card">
+          <div class="cash-ico">🚫</div>
+          <div class="cash-label">Ausentismo (3 meses)</div>
+          <div class="cash-value" id="statAbsentism">0%</div>
+          <div class="muted">citas a las que no asistieron</div>
+        </div>
+      </div>
+
+      <div class="main-grid">
+        <div class="col-main">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Movimientos de caja</h2>
+                <p class="card-sub">Últimos cobros registrados</p>
+              </div>
+              <select id="payFilter" class="select-lg">
+                <option value="">Todos</option>
+                <option value="paid">Pagados</option>
+                <option value="pending">Pendientes</option>
+              </select>
+            </div>
+            <div id="payTable"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">📊 Estadísticas del consultorio</h2>
+                <p class="card-sub">Últimos meses</p>
+              </div>
+            </div>
+            <div class="stats2-grid">
+              <div>
+                <h3 class="mini-title">Pacientes nuevos por mes</h3>
+                <div class="mini-bars" id="stNewPatients"></div>
+              </div>
+              <div>
+                <h3 class="mini-title">Ingresos por mes (USD)</h3>
+                <div class="mini-bars" id="stIncome"></div>
+              </div>
+              <div>
+                <h3 class="mini-title">Diagnósticos más frecuentes</h3>
+                <ol class="dx-list" id="stTopDx"></ol>
+              </div>
+              <div>
+                <h3 class="mini-title">Horas con más citas</h3>
+                <div id="stBusyHours"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-side">
+          <div class="card">
+            <h2 class="card-title">Nuevo cobro</h2>
+            <p class="card-sub">Registrar pago manual</p>
+            <form class="form" id="payForm">
+              <label>Paciente</label>
+              <select id="payPatient" required></select>
+              <div class="grid2">
+                <div><label>Monto (USD)</label><input id="payAmount" type="number" step="0.01" min="0" placeholder="25.00" required /></div>
+                <div><label>Método</label>
+                  <select id="payMethod">
+                    <option value="cash">Efectivo</option>
+                    <option value="transfer">Transferencia</option>
+                    <option value="card">Tarjeta</option>
+                    <option value="other">Otro</option>
+                  </select>
+                </div>
+              </div>
+              <label>Estado</label>
+              <select id="payStatus">
+                <option value="paid">Pagado</option>
+                <option value="pending">Pendiente</option>
+              </select>
+              <label>Concepto (opcional)</label>
+              <input id="payConcept" placeholder="Ej: consulta general, certificado…" />
+              <button class="btn btn-primary btn-block" type="submit">Registrar</button>
+              <div class="muted" id="payMsg"></div>
             </form>
           </div>
         </div>
@@ -773,6 +996,17 @@
               </div>
             </div>
             <div id="usersTable"></div>
+          </div>
+
+          <div class="card hidden" id="auditCard">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">🔐 Auditoría de accesos</h2>
+                <p class="card-sub">Quién hizo qué — requisito de la Ley de Protección de Datos Personales</p>
+              </div>
+              <button class="btn btn-outline btn-sm" id="auditRefresh">↻ Actualizar</button>
+            </div>
+            <div id="auditTable"></div>
           </div>
         </div>
 

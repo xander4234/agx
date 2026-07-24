@@ -28,15 +28,18 @@ router.put("/appointment/:appointmentId", uuidParams("appointmentId"), requireRo
   const objective = s(req.body?.objective, 5000);
   const assessment = s(req.body?.assessment, 5000);
   const plan = s(req.body?.plan, 5000);
+  const cie10_code = s(req.body?.cie10_code, 10);
+  const cie10_desc = s(req.body?.cie10_desc, 200);
 
   const r = await q(
-    `INSERT INTO encounters(clinic_id, appointment_id, subjective, objective, assessment, plan)
-     VALUES($1,$2,$3,$4,$5,$6)
+    `INSERT INTO encounters(clinic_id, appointment_id, subjective, objective, assessment, plan, cie10_code, cie10_desc)
+     VALUES($1,$2,$3,$4,$5,$6,$7,$8)
      ON CONFLICT (appointment_id) DO UPDATE
        SET subjective=EXCLUDED.subjective, objective=EXCLUDED.objective,
-           assessment=EXCLUDED.assessment, plan=EXCLUDED.plan
+           assessment=EXCLUDED.assessment, plan=EXCLUDED.plan,
+           cie10_code=EXCLUDED.cie10_code, cie10_desc=EXCLUDED.cie10_desc
      RETURNING *`,
-    [req.user.clinicId, req.params.appointmentId, subjective, objective, assessment, plan]
+    [req.user.clinicId, req.params.appointmentId, subjective, objective, assessment, plan, cie10_code, cie10_desc]
   );
   res.json(r.rows[0]);
 }));

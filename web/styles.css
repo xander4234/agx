@@ -565,3 +565,81 @@ body{
   .hero-actions{ grid-template-columns: 1fr; }
   .hero-actions .btn-dark{ grid-column: auto; }
 }
+
+/* ============ MEJORAS: agenda semanal, caja, evolución, CIE-10 ============ */
+
+/* --- toggle Lista/Semana --- */
+.seg{display:inline-flex;background:#f1f5f9;border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:9px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit}
+.seg button.is-on{background:#fff;color:var(--teal-dark);box-shadow:0 2px 8px rgba(2,6,23,.08)}
+
+/* --- calendario semanal --- */
+.wk-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 12px;flex-wrap:wrap}
+.wk-nav b{color:var(--ink);text-transform:capitalize}
+.wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.wk-day{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px 6px;min-height:120px;display:flex;flex-direction:column;gap:6px}
+.wk-day.today{border-color:var(--teal);background:#f0fdfa;box-shadow:0 4px 14px rgba(13,148,136,.12)}
+.wk-head{font-size:11px;font-weight:700;color:var(--muted);text-transform:capitalize;display:flex;justify-content:space-between;align-items:center}
+.wk-day.today .wk-head{color:var(--teal-dark)}
+.wk-head b{font-size:15px;color:var(--ink)}
+.wk-chip{border:0;border-radius:8px;padding:5px 7px;font-size:11px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:1px;font-family:inherit;background:#e0f2fe;color:#075985}
+.wk-chip:hover{filter:brightness(.95)}
+.wk-chip .wk-time{font-weight:800}
+.wk-chip .wk-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-chip.st-confirmed{background:#dcfce7;color:#166534}
+.wk-chip.st-waiting{background:#fef3c7;color:#92400e}
+.wk-chip.st-in_progress{background:#e0e7ff;color:#3730a3}
+.wk-chip.st-done{background:#f1f5f9;color:#64748b;text-decoration:line-through}
+.wk-chip.st-no_show{background:#fee2e2;color:#991b1b}
+.wk-empty{color:#cbd5e1;font-size:12px;text-align:center;margin-top:14px}
+@media (max-width:900px){ .wk-grid{grid-template-columns:repeat(2,1fr)} .wk-day{min-height:70px} }
+
+/* --- botón WhatsApp --- */
+.btn-wa{background:#25d366;color:#fff;border:0}
+.btn-wa:hover{background:#1fb958}
+
+/* --- gráficas de evolución --- */
+.evo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.evo-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px}
+.evo-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.evo-last{color:var(--teal-dark);font-size:13px}
+.evo-svg{width:100%;height:auto;display:block}
+.evo-legend{display:flex;gap:12px;margin-top:6px;font-size:11px;color:var(--muted);font-weight:600}
+.evo-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+/* --- buscador CIE-10 --- */
+.cie-box{position:relative}
+.cie-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 30px rgba(2,6,23,.14);z-index:50;max-height:240px;overflow:auto;margin-top:4px}
+.cie-item{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.cie-item:hover{background:#f0fdfa}
+.cie-item b{color:var(--teal-dark);margin-right:6px}
+.cie-chip{display:inline-flex;align-items:center;gap:8px;background:#f0fdfa;border:1px solid #99f6e4;color:var(--teal-dark);font-weight:700;font-size:13px;border-radius:10px;padding:7px 10px;margin:6px 0}
+.cie-chip button{border:0;background:transparent;color:var(--teal-dark);cursor:pointer;font-weight:800;font-size:13px}
+
+/* --- caja --- */
+.cash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+.cash-card{background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 8px 24px rgba(2,6,23,.06);border:1px solid #eef2f7}
+.cash-card.warn{border-color:#fde68a;background:#fffbeb}
+.cash-ico{font-size:20px}
+.cash-label{font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+.cash-value{font-size:26px;font-weight:900;color:var(--ink);margin-top:2px}
+.cash-card.warn .cash-value{color:#b45309}
+.stats2-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+.mini-title{font-size:12.5px;font-weight:800;color:var(--muted);margin:0 0 10px;text-transform:uppercase;letter-spacing:.4px}
+.mini-bars{display:flex;align-items:flex-end;gap:8px;height:110px}
+.dx-list{margin:0;padding-left:18px;font-size:13px;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.hour-row{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:7px}
+.hour-row b{width:46px;color:var(--ink)}
+.hour-row span{color:var(--muted);font-weight:700}
+.hour-bar{flex:1;height:10px;background:#f1f5f9;border-radius:6px;overflow:hidden}
+.hour-bar i{display:block;height:100%;background:linear-gradient(90deg,#5eead4,#0d9488);border-radius:6px}
+
+/* --- cumpleaños --- */
+.bday-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #e2e8f0}
+.bday-row:last-child{border-bottom:0}
+.bday-ico{font-size:18px}
+.bday-info{flex:1;display:flex;flex-direction:column}
+.bday-info span{font-size:12px;color:var(--muted)}
+
+/* --- próximo control --- */
+.quick-follow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px}

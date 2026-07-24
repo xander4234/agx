@@ -11,6 +11,9 @@ RUN npm ci --omit=dev
 # Copiar código fuente
 COPY . .
 
+# Carpeta de exámenes/archivos (el volumen se monta aquí) con permisos correctos
+RUN mkdir -p /app/uploads
+
 # Seguridad: no correr como root
 RUN chown -R node:node /app
 USER node

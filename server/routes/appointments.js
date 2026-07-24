@@ -13,7 +13,7 @@ router.get("/", ah(async (req, res) => {
 
   const r = patient_id
     ? await q(
-        `SELECT a.*, p.first_name, p.last_name
+        `SELECT a.*, p.first_name, p.last_name, p.phone
          FROM appointments a
          JOIN patients p ON p.id = a.patient_id
          WHERE a.clinic_id=$1 AND a.patient_id=$2
@@ -22,7 +22,7 @@ router.get("/", ah(async (req, res) => {
         [req.user.clinicId, patient_id]
       )
     : await q(
-        `SELECT a.*, p.first_name, p.last_name
+        `SELECT a.*, p.first_name, p.last_name, p.phone
          FROM appointments a
          JOIN patients p ON p.id = a.patient_id
          WHERE a.clinic_id=$1
@@ -94,7 +94,7 @@ router.post("/walkin", ah(async (req, res) => {
 // Cambiar estado
 router.post("/:id/status", uuidParams("id"), ah(async (req, res) => {
   const { status } = req.body || {};
-  const allowed = ["scheduled","confirmed","waiting","in_progress","done","canceled"];
+  const allowed = ["scheduled","confirmed","waiting","in_progress","done","canceled","no_show"];
   if (!allowed.includes(status)) return res.status(400).json({ error: "invalid_status" });
 
   const r = await q(

@@ -13,6 +13,7 @@ import jwt from "jsonwebtoken";
 dotenv.config();
 
 import { q, pool } from "./db.js";
+import { ensureUpgrades, auditMiddleware } from "./migrations.js";
 import { JWT_SECRET, isUuid } from "./utils.js";
 import authRoutes from "./routes/auth.js";
 import patientsRoutes from "./routes/patients.js";
@@ -26,6 +27,10 @@ import clinicRoutes from "./routes/clinic.js";
 import superadminRoutes from "./routes/superadmin.js";
 import chatRoutes from "./routes/chat.js";
 import aiRoutes from "./routes/ai.js";
+import icd10Routes from "./routes/icd10.js";
+import templatesRoutes from "./routes/templates.js";
+import paymentsRoutes from "./routes/payments.js";
+import statsRoutes from "./routes/stats.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -74,6 +79,14 @@ app.get("/api/health", async (req, res) => {
 });
 
 app.use("/api", apiLimiter);
+
+// Migraciones automáticas (idempotentes) + auditoría de accesos
+app.use("/api", async (req, res, next) => {
+  try { await ensureUpgrades(); } catch (e) { console.error("[migraciones]", e.message); }
+  next();
+});
+app.use("/api", auditMiddleware);
+
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/patients", patientsRoutes);
 app.use("/api/appointments", appointmentsRoutes);
@@ -86,6 +99,10 @@ app.use("/api/clinic", clinicRoutes);
 app.use("/api/superadmin", superadminRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/ai", aiLimiter, aiRoutes);
+app.use("/api/icd10", icd10Routes);
+app.use("/api/templates", templatesRoutes);
+app.use("/api/payments", paymentsRoutes);
+app.use("/api/stats", statsRoutes);
 
 // 404 para rutas de API desconocidas (antes del fallback del frontend)
 app.use("/api", (req, res) => res.status(404).json({ error: "not_found" }));

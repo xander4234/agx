@@ -6,6 +6,7 @@ dotenv.config();
 
 import { q, pool } from "./db.js";
 import { hashPassword } from "./utils.js";
+import { ensureUpgrades } from "./migrations.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,6 +69,9 @@ async function main() {
   await q("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
   await q("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('superadmin','admin','staff','provider'))");
   await q("UPDATE users SET role='superadmin' WHERE email='angel@agx.local'");
+
+  // 5) migraciones automáticas (antecedentes, CIE-10, caja, plantillas, auditoría, índices)
+  await ensureUpgrades();
 
   console.log("DB initialized ✅");
 }

@@ -30,6 +30,7 @@ function pill(status){
   const map = {
     scheduled:["Pendiente","info"], confirmed:["Confirmada","ok"], waiting:["En espera","wait"],
     in_progress:["En atención","info"], done:["Finalizada","ok"], canceled:["Cancelada","bad"],
+    no_show:["No asistió","bad"],
   };
   const [label, cls] = map[status] || [status, "info"];
   return `<span class="pill ${cls}">${label}</span>`;
@@ -54,6 +55,7 @@ function setView(name){
   $$(".view").forEach(v => v.classList.add("hidden"));
   const el = $("#view-" + name);
   if (el) el.classList.remove("hidden");
+  if (name === "caja") loadCaja().catch(()=>{});
 }
 $("#tabs").addEventListener("click", (e)=>{
   const b = e.target.closest("button[data-view]");
@@ -121,6 +123,10 @@ async function loadAll(){
   fillPatientSelects();
   await loadPrescriptions();
   await loadClinicConfig();
+  await Promise.all([
+    loadTemplates().catch(()=>{}),
+    loadBirthdays().catch(()=>{}),
+  ]);
 }
 
 /* ================= configuración del consultorio ================= */
@@ -139,7 +145,8 @@ async function loadClinicConfig(){
   $("#usersCard")?.classList.toggle("hidden", !isAdmin);
   $("#newUserCard")?.classList.toggle("hidden", !isAdmin);
   $("#clinicForm").querySelector("button").disabled = !isAdmin;
-  if (isAdmin) await loadUsers();
+  $("#auditCard")?.classList.toggle("hidden", !isAdmin);
+  if (isAdmin){ await loadUsers(); loadAudit().catch(()=>{}); }
 
   // panel de plataforma solo para el superadmin
   const isSuper = me?.role === "superadmin";
@@ -271,7 +278,7 @@ $("#usersTable")?.addEventListener("click", async (e)=>{
 
 function fillPatientSelects(){
   const opts = PATIENTS.map(p => `<option value="${p.id}">${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</option>`).join("");
-  ["#apptPatient","#walkinPatient","#rxPatient"].forEach(sel => { $(sel).innerHTML = opts; });
+  ["#apptPatient","#walkinPatient","#rxPatient","#payPatient"].forEach(sel => { const el = $(sel); if (el) el.innerHTML = opts; });
   $("#hcPatient").innerHTML = `<option value="">— Selecciona paciente —</option>` + opts;
   syncRxAppointments();
 }
@@ -514,6 +521,8 @@ function apptActions(a){
     ${["scheduled","confirmed"].includes(a.status) ? `<button class="btn btn-outline btn-sm" data-status="${a.id}:waiting">A cola</button>` : ""}
     ${["scheduled","waiting","confirmed"].includes(a.status) ? `<button class="btn btn-primary btn-sm" data-atender="${a.id}">Atender</button>` : ""}
     ${a.status === "in_progress" ? `<button class="btn btn-primary btn-sm" data-atender="${a.id}">Consulta</button>` : ""}
+    ${a.phone && ["scheduled","confirmed"].includes(a.status) ? `<button class="btn btn-wa btn-sm" data-wa="${a.id}" title="Enviar recordatorio por WhatsApp">📱 WhatsApp</button>` : ""}
+    ${["scheduled","confirmed"].includes(a.status) ? `<button class="btn btn-outline btn-sm" data-status="${a.id}:no_show" title="El paciente no vino">✗ No asistió</button>` : ""}
     ${a.type === "virtual" ? `<button class="btn btn-primary btn-sm" data-room="${a.id}">Sala</button>` : ""}
     <button class="btn btn-outline btn-sm" data-chat="${a.id}">Chat</button>
     <button class="btn btn-outline btn-sm" data-hc="${a.patient_id}">Historia</button>
@@ -521,7 +530,74 @@ function apptActions(a){
   </div>`;
 }
 
+/* --- recordatorio por WhatsApp (sin costo, abre WhatsApp con el mensaje listo) --- */
+function waPhone(raw){
+  let d = String(raw || "").replace(/\D/g, "");
+  if (!d) return null;
+  if (d.startsWith("0")) d = "593" + d.slice(1);
+  else if (d.length === 9) d = "593" + d;
+  return d;
+}
+function openWhatsApp(apptId){
+  const a = APPTS.find(x => x.id === apptId);
+  if (!a) return;
+  const phone = waPhone(a.phone);
+  if (!phone){ alert("Este paciente no tiene teléfono registrado."); return; }
+  const fecha = new Date(a.starts_at).toLocaleDateString("es-EC", { weekday:"long", day:"numeric", month:"long" });
+  const hora = fmtTime(a.starts_at);
+  const msg = `Hola ${a.first_name} 👋. Le recordamos su cita en ${CLINIC?.name || "el consultorio"} el ${fecha} a las ${hora}. Por favor confirme su asistencia. ¡Gracias!`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+}
+
+let agendaMode = "list";
+let weekOffset = 0;
+
+$("#agendaViewToggle")?.addEventListener("click", (e)=>{
+  const b = e.target.closest("button[data-amode]");
+  if (!b) return;
+  agendaMode = b.dataset.amode;
+  $$("#agendaViewToggle button").forEach(x => x.classList.toggle("is-on", x === b));
+  $("#apptTable").classList.toggle("hidden", agendaMode !== "list");
+  $("#weekCalWrap").classList.toggle("hidden", agendaMode !== "week");
+  if (agendaMode === "week") renderWeekCal();
+});
+$("#wkPrev")?.addEventListener("click", ()=>{ weekOffset--; renderWeekCal(); });
+$("#wkNext")?.addEventListener("click", ()=>{ weekOffset++; renderWeekCal(); });
+$("#wkToday")?.addEventListener("click", ()=>{ weekOffset = 0; renderWeekCal(); });
+
+function renderWeekCal(){
+  const el = $("#weekCal");
+  if (!el) return;
+  const now = new Date();
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7) + weekOffset * 7);
+  const days = Array.from({ length: 7 }, (_, i) => new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i));
+  const end = new Date(monday.getTime() + 7 * 86400000);
+
+  $("#wkLabel").textContent = `${monday.toLocaleDateString("es-EC", { day:"numeric", month:"short" })} — ${new Date(end.getTime() - 86400000).toLocaleDateString("es-EC", { day:"numeric", month:"short", year:"numeric" })}`;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  el.innerHTML = `<div class="wk-grid">${days.map(d => {
+    const next = new Date(d.getTime() + 86400000);
+    const dayAppts = APPTS
+      .filter(a => { const t = new Date(a.starts_at); return t >= d && t < next && a.status !== "canceled"; })
+      .sort((a,b)=> new Date(a.starts_at) - new Date(b.starts_at));
+    const isToday = d.getTime() === today.getTime();
+    return `<div class="wk-day ${isToday ? "today" : ""}">
+      <div class="wk-head">${d.toLocaleDateString("es-EC", { weekday:"short" })}<b>${d.getDate()}</b></div>
+      ${dayAppts.map(a => `
+        <button class="wk-chip st-${a.status}" data-atender="${a.id}" title="${escapeHtml(a.reason || "")} · ${pillLabel(a.status)}">
+          <span class="wk-time">${fmtTime(a.starts_at)}</span>
+          <span class="wk-name">${escapeHtml(a.first_name)} ${escapeHtml((a.last_name || "").slice(0,1))}.</span>
+        </button>`).join("") || `<div class="wk-empty">—</div>`}
+    </div>`;
+  }).join("")}</div>`;
+}
+function pillLabel(status){
+  return ({ scheduled:"Pendiente", confirmed:"Confirmada", waiting:"En espera", in_progress:"En atención", done:"Finalizada", canceled:"Cancelada", no_show:"No asistió" })[status] || status;
+}
+
 function renderAgenda(){
+  if (agendaMode === "week") renderWeekCal();
   $("#apptTable").innerHTML = APPTS.length ? `
     <table class="tbl">
       <thead><tr><th>Paciente</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -573,6 +649,9 @@ document.addEventListener("click", async (e)=>{
   }
   const chat = e.target.closest("button[data-chat]");
   if (chat){ await openChatForAppointment(chat.dataset.chat); return; }
+
+  const wa = e.target.closest("button[data-wa]");
+  if (wa){ openWhatsApp(wa.dataset.wa); return; }
 
   const hc = e.target.closest("button[data-hc]");
   if (hc){
@@ -640,9 +719,12 @@ async function openConsulta(appointmentId){
     $("#cSoapO").value = enc.objective || "";
     $("#cSoapA").value = enc.assessment || "";
     $("#cSoapP").value = enc.plan || "";
+    setCie(enc.cie10_code, enc.cie10_desc);
     $("#cSoapMsg").textContent = "";
     $("#cVitalsMsg").textContent = "";
     $("#cFileMsg").textContent = "";
+    $("#cPayMsg") && ($("#cPayMsg").textContent = "");
+    $("#cFollowMsg") && ($("#cFollowMsg").textContent = "");
 
     await Promise.all([loadConsultaFiles(), loadConsultaVitals()]);
     await loadAll(); // refresca estados en tablas
@@ -748,9 +830,192 @@ $("#cSoapForm").addEventListener("submit", async (e)=>{
     await api(`/encounters/appointment/${consultaAppt.id}`, { method:"PUT", body: JSON.stringify({
       subjective: $("#cSoapS").value, objective: $("#cSoapO").value,
       assessment: $("#cSoapA").value, plan: $("#cSoapP").value,
+      cie10_code: selectedCie?.code || null,
+      cie10_desc: selectedCie?.desc || null,
     })});
     msg.textContent = "Nota guardada ✅";
   }catch{ msg.textContent = "No se pudo guardar."; }
+});
+
+/* --- buscador de diagnóstico CIE-10 --- */
+let selectedCie = null;
+let cieTimer = null;
+
+function setCie(code, desc){
+  if (code || desc){
+    selectedCie = { code: code || "", desc: desc || "" };
+    $("#cCieChipTxt").textContent = `${selectedCie.code} — ${selectedCie.desc}`;
+    $("#cCieChip").classList.remove("hidden");
+  } else {
+    selectedCie = null;
+    $("#cCieChip").classList.add("hidden");
+  }
+  $("#cCieSearch").value = "";
+  $("#cCieList").classList.add("hidden");
+}
+
+$("#cCieSearch")?.addEventListener("input", (e)=>{
+  clearTimeout(cieTimer);
+  const term = e.target.value.trim();
+  if (term.length < 2){ $("#cCieList").classList.add("hidden"); return; }
+  cieTimer = setTimeout(async ()=>{
+    try{
+      const list = await api(`/icd10?q=${encodeURIComponent(term)}`);
+      const box = $("#cCieList");
+      if (!list.length){ box.classList.add("hidden"); return; }
+      box.innerHTML = list.map(c => `
+        <button type="button" class="cie-item" data-ciecode="${escapeHtml(c.code)}" data-ciedesc="${escapeHtml(c.desc)}">
+          <b>${escapeHtml(c.code)}</b> ${escapeHtml(c.desc)}
+        </button>`).join("");
+      box.classList.remove("hidden");
+    }catch{}
+  }, 250);
+});
+
+$("#cCieList")?.addEventListener("click", (e)=>{
+  const b = e.target.closest("button[data-ciecode]");
+  if (!b) return;
+  setCie(b.dataset.ciecode, b.dataset.ciedesc);
+});
+$("#cCieClear")?.addEventListener("click", ()=> setCie(null, null));
+document.addEventListener("click", (e)=>{
+  if (!e.target.closest(".cie-box")) $("#cCieList")?.classList.add("hidden");
+});
+
+/* --- plantillas rápidas (diagnóstico y receta) --- */
+let TPL = { rx: [], dx: [] };
+
+async function loadTemplates(){
+  const all = await api("/templates");
+  TPL.rx = all.filter(t => t.type === "rx");
+  TPL.dx = all.filter(t => t.type === "dx");
+  const opt = (t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`;
+  $("#dxTplSel") && ($("#dxTplSel").innerHTML = `<option value="">— Sin plantilla —</option>` + TPL.dx.map(opt).join(""));
+  $("#rxTplSel") && ($("#rxTplSel").innerHTML = `<option value="">— Sin plantilla —</option>` + TPL.rx.map(opt).join(""));
+}
+
+$("#dxTplApply")?.addEventListener("click", ()=>{
+  const t = TPL.dx.find(x => x.id === $("#dxTplSel").value);
+  if (!t) return;
+  const c = t.content || {};
+  if (c.assessment) $("#cSoapA").value = c.assessment;
+  if (c.plan) $("#cSoapP").value = c.plan;
+  if (c.cie10_code || c.cie10_desc) setCie(c.cie10_code, c.cie10_desc);
+});
+
+$("#dxTplSave")?.addEventListener("click", async ()=>{
+  const name = prompt("Nombre de la plantilla (ej: Gripe común):");
+  if (!name) return;
+  try{
+    await api("/templates", { method:"POST", body: JSON.stringify({
+      type: "dx", name,
+      content: {
+        assessment: $("#cSoapA").value.trim() || null,
+        plan: $("#cSoapP").value.trim() || null,
+        cie10_code: selectedCie?.code || null,
+        cie10_desc: selectedCie?.desc || null,
+      },
+    })});
+    await loadTemplates();
+    $("#cSoapMsg").textContent = "Plantilla guardada ✅";
+  }catch{ $("#cSoapMsg").textContent = "No se pudo guardar la plantilla."; }
+});
+
+function rxItemHtml(it = {}){
+  return `
+    <label>Medicamento</label>
+    <input class="rxMed" placeholder="Medicamento" value="${escapeHtml(it.medication || "")}" />
+    <div class="grid2">
+      <div><label>Dosis</label><input class="rxDose" placeholder="Dosis" value="${escapeHtml(it.dose || "")}" /></div>
+      <div><label>Frecuencia</label><input class="rxFreq" placeholder="Frecuencia" value="${escapeHtml(it.frequency || "")}" /></div>
+    </div>
+    <label>Duración</label>
+    <input class="rxDur" placeholder="Duración" value="${escapeHtml(it.duration || "")}" />`;
+}
+
+$("#rxTplApply")?.addEventListener("click", ()=>{
+  const t = TPL.rx.find(x => x.id === $("#rxTplSel").value);
+  if (!t) return;
+  const c = t.content || {};
+  const items = Array.isArray(c.items) && c.items.length ? c.items : [{}];
+  $("#rxItems").innerHTML = items.map(it => `<div class="rx-item">${rxItemHtml(it)}</div>`).join("");
+  if (c.instructions) $("#rxInstructions").value = c.instructions;
+});
+
+$("#rxTplSave")?.addEventListener("click", async ()=>{
+  const items = $$("#rxItems .rx-item").map(el => ({
+    medication: el.querySelector(".rxMed").value.trim(),
+    dose: el.querySelector(".rxDose").value.trim() || null,
+    frequency: el.querySelector(".rxFreq").value.trim() || null,
+    duration: el.querySelector(".rxDur").value.trim() || null,
+  })).filter(i => i.medication);
+  if (!items.length){ $("#rxMsg").textContent = "Agrega medicamentos antes de guardar la plantilla."; return; }
+  const name = prompt("Nombre de la plantilla (ej: Gripe adulto):");
+  if (!name) return;
+  try{
+    await api("/templates", { method:"POST", body: JSON.stringify({
+      type: "rx", name,
+      content: { items, instructions: $("#rxInstructions").value.trim() || null },
+    })});
+    await loadTemplates();
+    $("#rxMsg").textContent = "Plantilla guardada ✅";
+  }catch{ $("#rxMsg").textContent = "No se pudo guardar la plantilla."; }
+});
+
+/* --- cobro de la consulta --- */
+$("#cPayForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if (!consultaAppt) return;
+  const msg = $("#cPayMsg");
+  msg.textContent = "Registrando…";
+  try{
+    await api("/payments", { method:"POST", body: JSON.stringify({
+      patient_id: consultaAppt.patient_id,
+      appointment_id: consultaAppt.id,
+      amount: Number($("#cPayAmount").value),
+      method: $("#cPayMethod").value,
+      status: $("#cPayStatus").value,
+      concept: `Consulta — ${consultaAppt.reason || "atención médica"}`,
+    })});
+    msg.textContent = "Cobro registrado en caja ✅";
+    e.target.reset();
+  }catch{ msg.textContent = "No se pudo registrar."; }
+});
+
+/* --- próximo control --- */
+function setFollowInput(days){
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(9, 0, 0, 0);
+  const pad = (n) => String(n).padStart(2, "0");
+  $("#cFollowDate").value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+document.addEventListener("click", (e)=>{
+  const f = e.target.closest("button[data-follow]");
+  if (f) setFollowInput(Number(f.dataset.follow));
+});
+
+$("#cFollowForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if (!consultaAppt) return;
+  const msg = $("#cFollowMsg");
+  const start = $("#cFollowDate").value;
+  if (!start){ msg.textContent = "Elige fecha y hora."; return; }
+  msg.textContent = "Agendando…";
+  try{
+    const starts = new Date(start);
+    await api("/appointments", { method:"POST", body: JSON.stringify({
+      patient_id: consultaAppt.patient_id,
+      type: "in_person",
+      reason: "Control / seguimiento",
+      starts_at: starts.toISOString(),
+      ends_at: new Date(starts.getTime() + 30 * 60000).toISOString(),
+    })});
+    msg.textContent = `Control agendado ✅ ${fmtDate(starts.toISOString())}`;
+    e.target.reset();
+    APPTS = await api("/appointments");
+    renderAgenda();
+  }catch{ msg.textContent = "No se pudo agendar."; }
 });
 
 $("#cVitalsForm").addEventListener("submit", async (e)=>{
@@ -856,6 +1121,10 @@ $("#patientForm").addEventListener("submit", async (e)=>{
       sex: $("#pSex").value || null,
       allergies: $("#pAllergies").value.trim() || null,
       conditions: $("#pConditions").value.trim() || null,
+      family_history: $("#pFamily").value.trim() || null,
+      surgical_history: $("#pSurgical").value.trim() || null,
+      habits: $("#pHabits").value.trim() || null,
+      medications: $("#pMeds").value.trim() || null,
       notes: $("#pNotes").value.trim() || null,
     })});
     msg.textContent = "Paciente guardado ✅";
@@ -903,10 +1172,17 @@ async function loadHistoria(patientId){
     ["Cédula", p.id_number], ["Teléfono", p.phone], ["Email", p.email],
     ["Nacimiento", p.birth_date ? fmtDay(p.birth_date) : null],
     ["Sexo", sexMap[p.sex]], ["Alergias", p.allergies],
-    ["Condiciones", p.conditions], ["Notas", p.notes],
+    ["Condiciones", p.conditions],
+    ["Antec. familiares", p.family_history],
+    ["Antec. quirúrgicos", p.surgical_history],
+    ["Hábitos", p.habits],
+    ["Medicación habitual", p.medications],
+    ["Notas", p.notes],
   ];
   $("#hcInfo").innerHTML = kv.map(([k,v]) => `
     <div class="kv"><div class="k">${k}</div><div class="v">${escapeHtml(v || "—")}</div></div>`).join("");
+
+  renderEvoCharts(vitals);
 
   $("#hcAppointments").innerHTML = appts.length ? `
     <table class="tbl">
@@ -936,6 +1212,86 @@ async function loadHistoria(patientId){
     </table>` : `<div class="empty">Sin registros</div>`;
 }
 
+/* --- PDF de historia clínica completa --- */
+$("#hcPdfBtn")?.addEventListener("click", async ()=>{
+  if (!hcPatientId) return;
+  try{
+    const res = await fetch(`${API}/patients/${hcPatientId}/historia.pdf`, { headers:{ Authorization:`Bearer ${token}` } });
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank", "noopener");
+    setTimeout(()=> URL.revokeObjectURL(url), 60_000);
+  }catch{ alert("No se pudo generar el PDF."); }
+});
+
+/* --- gráficas de evolución (SVG, sin librerías, funciona offline) --- */
+function evoChart(title, unit, series){
+  const pts = series.flatMap(s => s.points);
+  if (pts.length < 2){
+    return `<div class="evo-card"><div class="evo-title">${title}</div><div class="empty" style="padding:18px 6px;">Se necesitan al menos 2 registros</div></div>`;
+  }
+  const W = 300, H = 130, PL = 34, PR = 10, PT = 12, PB = 22;
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  let yMin = Math.min(...ys), yMax = Math.max(...ys);
+  if (yMin === yMax){ yMin -= 1; yMax += 1; }
+  const pad = (yMax - yMin) * 0.15;
+  yMin -= pad; yMax += pad;
+  const X = (x) => PL + ((x - xMin) / Math.max(xMax - xMin, 1)) * (W - PL - PR);
+  const Y = (y) => PT + (1 - (y - yMin) / (yMax - yMin)) * (H - PT - PB);
+
+  const grid = [0, 0.5, 1].map(f => {
+    const y = PT + f * (H - PT - PB);
+    const val = (yMax - f * (yMax - yMin)).toFixed(0);
+    return `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>
+            <text x="${PL - 5}" y="${y + 3}" text-anchor="end" font-size="8" fill="#94a3b8">${val}</text>`;
+  }).join("");
+
+  const lines = series.map(s => {
+    const sorted = [...s.points].sort((a,b)=> a.x - b.x);
+    const path = sorted.map(p => `${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ");
+    const dots = sorted.map(p => `<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="2.6" fill="${s.color}"/>`).join("");
+    return `<polyline points="${path}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round"/>${dots}`;
+  }).join("");
+
+  const first = new Date(xMin).toLocaleDateString("es-EC", { day:"2-digit", month:"short" });
+  const last = new Date(xMax).toLocaleDateString("es-EC", { day:"2-digit", month:"short" });
+  const legend = series.length > 1
+    ? `<div class="evo-legend">${series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join("")}</div>` : "";
+  const latest = series.map(s => {
+    const sorted = [...s.points].sort((a,b)=> a.x - b.x);
+    return sorted.length ? sorted[sorted.length-1].y : null;
+  }).filter(v => v !== null).join(" / ");
+
+  return `<div class="evo-card">
+    <div class="evo-title">${title} <b class="evo-last">${latest} ${unit}</b></div>
+    <svg viewBox="0 0 ${W} ${H}" class="evo-svg">
+      ${grid}${lines}
+      <text x="${PL}" y="${H - 6}" font-size="8" fill="#94a3b8">${first}</text>
+      <text x="${W - PR}" y="${H - 6}" text-anchor="end" font-size="8" fill="#94a3b8">${last}</text>
+    </svg>
+    ${legend}
+  </div>`;
+}
+
+function renderEvoCharts(vitals){
+  const el = $("#evoCharts");
+  if (!el) return;
+  const asc = [...(vitals || [])].reverse();
+  const serie = (field) => asc
+    .filter(v => v[field] !== null && v[field] !== undefined)
+    .map(v => ({ x: new Date(v.taken_at).getTime(), y: Number(v[field]) }));
+
+  el.innerHTML =
+    evoChart("⚖️ Peso", "kg", [{ label:"Peso", color:"#0d9488", points: serie("weight_kg") }]) +
+    evoChart("🩸 Presión arterial", "mmHg", [
+      { label:"Sistólica", color:"#dc2626", points: serie("systolic") },
+      { label:"Diastólica", color:"#2563eb", points: serie("diastolic") },
+    ]) +
+    evoChart("🍬 Glucosa", "mg/dl", [{ label:"Glucosa", color:"#d97706", points: serie("glucose_mgdl") }]);
+}
+
 /* --- editar ficha del paciente --- */
 let hcPatientData = null;
 
@@ -951,6 +1307,10 @@ $("#hcEditBtn").addEventListener("click", ()=>{
   $("#eSex").value = p.sex || "";
   $("#eAllergies").value = p.allergies || "";
   $("#eConditions").value = p.conditions || "";
+  $("#eFamily").value = p.family_history || "";
+  $("#eSurgical").value = p.surgical_history || "";
+  $("#eHabits").value = p.habits || "";
+  $("#eMeds").value = p.medications || "";
   $("#eNotes").value = p.notes || "";
   $("#hcEditMsg").textContent = "";
   $("#hcEditForm").classList.remove("hidden");
@@ -978,6 +1338,10 @@ $("#hcEditForm").addEventListener("submit", async (e)=>{
       sex: $("#eSex").value || null,
       allergies: $("#eAllergies").value.trim() || null,
       conditions: $("#eConditions").value.trim() || null,
+      family_history: $("#eFamily").value.trim() || null,
+      surgical_history: $("#eSurgical").value.trim() || null,
+      habits: $("#eHabits").value.trim() || null,
+      medications: $("#eMeds").value.trim() || null,
       notes: $("#eNotes").value.trim() || null,
     })});
     msg.textContent = "Ficha actualizada ✅";
@@ -1246,6 +1610,173 @@ $("#aiForm").addEventListener("submit", async (e)=>{
     $("#aiAnswer").textContent = data.reply;
   }catch{ msg.textContent = "No se pudo analizar."; }
 });
+
+/* ================= caja y estadísticas ================= */
+const money = (v) => `$${Number(v || 0).toFixed(2)}`;
+
+async function loadCaja(){
+  try{
+    const [sum, stats] = await Promise.all([api("/payments/summary"), api("/stats/overview")]);
+    $("#cashToday").textContent = money(sum.today_total);
+    $("#cashTodayCount").textContent = sum.today_count ? `${sum.today_count} cobro(s)` : "";
+    $("#cashMonth").textContent = money(sum.month_total);
+    $("#cashPending").textContent = money(sum.pending_total);
+    $("#statAbsentism").textContent = `${stats.absentism_rate}%`;
+
+    renderMiniBars("#stNewPatients", stats.new_patients_by_month.map(r => ({ label: monthShort(r.month), value: Number(r.count) })), "");
+    renderMiniBars("#stIncome", stats.income_by_month.map(r => ({ label: monthShort(r.month), value: Number(r.total) })), "$");
+
+    $("#stTopDx").innerHTML = stats.top_diagnoses.length
+      ? stats.top_diagnoses.map(d => `<li><b>${escapeHtml((d.dx || "").slice(0, 48))}</b>${d.code ? ` <span class="muted">(${escapeHtml(d.code)})</span>` : ""} — ${d.count}</li>`).join("")
+      : `<div class="empty">Aún sin diagnósticos registrados</div>`;
+
+    $("#stBusyHours").innerHTML = stats.busy_hours.length
+      ? stats.busy_hours.map(h => `<div class="hour-row"><b>${String(h.hour).padStart(2,"0")}:00</b><div class="hour-bar"><i style="width:${Math.round((h.count / stats.busy_hours[0].count) * 100)}%"></i></div><span>${h.count}</span></div>`).join("")
+      : `<div class="empty">Sin datos aún</div>`;
+  }catch{}
+  await loadPayments().catch(()=>{});
+}
+
+function monthShort(ym){
+  const [y, m] = String(ym).split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("es-EC", { month: "short" });
+}
+
+function renderMiniBars(sel, data, prefix){
+  const el = $(sel);
+  if (!el) return;
+  if (!data.length){ el.innerHTML = `<div class="empty">Sin datos aún</div>`; return; }
+  const max = Math.max(...data.map(d => d.value), 1);
+  el.innerHTML = data.map(d => `
+    <div class="wbar">
+      <div class="num">${prefix}${d.value >= 1000 ? (d.value/1000).toFixed(1) + "k" : d.value}</div>
+      <div class="bar" style="height:${Math.max(Math.round((d.value / max) * 100), 5)}%"></div>
+      <div class="day">${d.label}</div>
+    </div>`).join("");
+}
+
+async function loadPayments(){
+  const f = $("#payFilter")?.value || "";
+  const list = await api(`/payments${f ? `?status=${f}` : ""}`);
+  const methodMap = { cash:"Efectivo", card:"Tarjeta", transfer:"Transf.", other:"Otro" };
+  const isAdmin = ["admin","superadmin"].includes(me?.role);
+  $("#payTable").innerHTML = list.length ? `
+    <table class="tbl">
+      <thead><tr><th>Paciente</th><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${list.map(p => `
+        <tr>
+          <td data-label="Paciente"><b>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</b></td>
+          <td data-label="Fecha">${fmtDate(p.created_at)}</td>
+          <td data-label="Concepto" class="muted">${escapeHtml(p.concept || "—")} · ${methodMap[p.method] || p.method}</td>
+          <td data-label="Monto"><b>${money(p.amount)}</b></td>
+          <td data-label="Estado">${p.status === "paid" ? `<span class="pill ok">Pagado</span>` : `<span class="pill wait">Pendiente</span>`}</td>
+          <td><div class="row-actions">
+            ${p.status === "pending" ? `<button class="btn btn-primary btn-sm" data-payok="${p.id}">✓ Cobrar</button>` : ""}
+            ${isAdmin ? `<button class="btn btn-outline btn-sm" data-paydel="${p.id}">✕</button>` : ""}
+          </div></td>
+        </tr>`).join("")}
+      </tbody>
+    </table>` : `<div class="empty">Sin movimientos aún — registra el primer cobro</div>`;
+}
+
+$("#payFilter")?.addEventListener("change", ()=> loadPayments().catch(()=>{}));
+
+$("#payTable")?.addEventListener("click", async (e)=>{
+  const ok = e.target.closest("button[data-payok]");
+  if (ok){
+    try{ await api(`/payments/${ok.dataset.payok}/pay`, { method:"POST" }); await loadCaja(); }catch{}
+    return;
+  }
+  const del = e.target.closest("button[data-paydel]");
+  if (del){
+    if (!confirm("¿Eliminar este movimiento de caja?")) return;
+    try{ await api(`/payments/${del.dataset.paydel}`, { method:"DELETE" }); await loadCaja(); }
+    catch{ alert("No se pudo eliminar."); }
+  }
+});
+
+$("#payForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const msg = $("#payMsg");
+  msg.textContent = "Registrando…";
+  try{
+    await api("/payments", { method:"POST", body: JSON.stringify({
+      patient_id: $("#payPatient").value,
+      amount: Number($("#payAmount").value),
+      method: $("#payMethod").value,
+      status: $("#payStatus").value,
+      concept: $("#payConcept").value.trim() || null,
+    })});
+    msg.textContent = "Cobro registrado ✅";
+    e.target.reset();
+    await loadCaja();
+  }catch{ msg.textContent = "No se pudo registrar."; }
+});
+
+/* ================= cumpleaños de hoy ================= */
+async function loadBirthdays(){
+  const list = await api("/stats/birthdays");
+  const card = $("#birthdayCard");
+  if (!card) return;
+  if (!list.length){ card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+  $("#birthdayList").innerHTML = list.map(p => `
+    <div class="bday-row">
+      <span class="bday-ico">🎂</span>
+      <div class="bday-info"><b>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</b><span>${p.age} años</span></div>
+      ${p.phone ? `<button class="btn btn-wa btn-sm" data-bday="${escapeHtml(p.phone)}" data-bdayname="${escapeHtml(p.first_name)}">📱 Felicitar</button>` : ""}
+    </div>`).join("");
+}
+
+document.addEventListener("click", (e)=>{
+  const b = e.target.closest("button[data-bday]");
+  if (!b) return;
+  const phone = waPhone(b.dataset.bday);
+  if (!phone) return;
+  const msg = `¡Feliz cumpleaños, ${b.dataset.bdayname}! 🎉 Le deseamos un excelente día. Con cariño, ${CLINIC?.name || "su consultorio"} 🩺`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+});
+
+/* ================= auditoría (solo admin) ================= */
+async function loadAudit(){
+  try{
+    const rows = await api("/clinic/audit");
+    $("#auditTable").innerHTML = rows.length ? `
+      <table class="tbl">
+        <thead><tr><th>Usuario</th><th>Acción</th><th>Recurso</th><th>Fecha</th></tr></thead>
+        <tbody>${rows.map(r => `
+          <tr>
+            <td data-label="Usuario"><b>${escapeHtml(r.user_name || "—")}</b></td>
+            <td data-label="Acción">${auditVerb(r.method)}</td>
+            <td data-label="Recurso" class="muted">${escapeHtml(auditPath(r.path))}</td>
+            <td data-label="Fecha">${fmtDate(r.created_at)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>` : `<div class="empty">Sin eventos aún — se registran automáticamente</div>`;
+  }catch{
+    $("#auditTable").innerHTML = `<div class="empty">No se pudo cargar la auditoría</div>`;
+  }
+}
+function auditVerb(m){
+  return ({ GET:`<span class="pill info">Consultó</span>`, POST:`<span class="pill ok">Creó</span>`,
+            PUT:`<span class="pill wait">Editó</span>`, DELETE:`<span class="pill bad">Eliminó</span>` })[m] || m;
+}
+function auditPath(p){
+  const map = [
+    [/^\/patients\/[0-9a-f-]+\/historia/, "Historia clínica completa (PDF)"],
+    [/^\/patients\/[0-9a-f-]+/, "Ficha de paciente"], [/^\/patients/, "Paciente"],
+    [/^\/appointments/, "Cita"], [/^\/encounters/, "Nota clínica"],
+    [/^\/vitals/, "Signos vitales"], [/^\/prescriptions.*pdf/, "Receta (PDF)"],
+    [/^\/prescriptions/, "Receta"], [/^\/certificates.*pdf/, "Certificado (PDF)"],
+    [/^\/certificates/, "Certificado"], [/^\/files.*download/, "Descarga de examen"],
+    [/^\/files/, "Examen/archivo"], [/^\/payments/, "Caja"],
+    [/^\/templates/, "Plantilla"], [/^\/clinic\/users/, "Usuario"], [/^\/clinic/, "Consultorio"],
+    [/^\/chat/, "Chat"],
+  ];
+  for (const [re, label] of map) if (re.test(p)) return label;
+  return p;
+}
+$("#auditRefresh")?.addEventListener("click", ()=> loadAudit());
 
 /* ================= boot ================= */
 (async function boot(){
