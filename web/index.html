@@ -1161,6 +1161,53 @@
     <span class="sd si5">💉</span>
   </div>
 
+  <!-- ==================== MODAL: RECETA RÁPIDA DESDE CONSULTA ==================== -->
+  <div id="rxModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <h2 class="card-title">💊 Nueva receta</h2>
+          <p class="card-sub" id="mRxPatientLabel">—</p>
+        </div>
+        <button type="button" class="modal-close" id="mRxClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <form class="form" id="mRxForm">
+          <div class="grid2">
+            <div>
+              <label>Plantilla de receta</label>
+              <select id="mRxTplSel"><option value="">— Sin plantilla —</option></select>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;">
+              <button class="btn btn-outline btn-sm" type="button" id="mRxTplApply">Aplicar</button>
+              <button class="btn btn-outline btn-sm" type="button" id="mRxTplSave" title="Guardar como plantilla">💾</button>
+            </div>
+          </div>
+          <div id="mRxItems">
+            <div class="rx-item">
+              <label>Medicamento</label>
+              <input class="rxMed" placeholder="Paracetamol 500mg" required />
+              <div class="grid2">
+                <div><label>Dosis</label><input class="rxDose" placeholder="1 tableta" /></div>
+                <div><label>Frecuencia</label><input class="rxFreq" placeholder="cada 8 horas" /></div>
+              </div>
+              <label>Duración</label>
+              <input class="rxDur" placeholder="5 días" />
+            </div>
+          </div>
+          <button class="btn btn-outline btn-block" type="button" id="mRxAddItem">+ Agregar medicamento</button>
+          <label>Indicaciones generales</label>
+          <textarea id="mRxInstructions" placeholder="Tomar con alimentos…"></textarea>
+          <div class="grid2">
+            <button class="btn btn-primary" type="submit">💊 Emitir receta</button>
+            <button class="btn btn-outline" type="button" id="mRxCancel">Cancelar</button>
+          </div>
+          <div class="muted" id="mRxMsg"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="/app.js"></script>
 </body>
 </html>

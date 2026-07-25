@@ -643,3 +643,25 @@ body{
 
 /* --- próximo control --- */
 .quick-follow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* ============ Modal: receta rápida desde Consulta (no navega de pantalla) ============ */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(11,31,59,.55); backdrop-filter:blur(2px);
+  display:flex; align-items:center; justify-content:center; z-index:200; padding:20px;
+}
+.modal-overlay.hidden{ display:none; }
+.modal-box{
+  background:#fff; border-radius:18px; max-width:560px; width:100%;
+  max-height:88vh; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 30px 80px rgba(2,6,23,.35);
+}
+.modal-head{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  padding:20px 22px 14px; border-bottom:1px solid #eef2f7; flex-shrink:0;
+}
+.modal-close{
+  border:0; background:#f1f5f9; color:var(--muted); width:30px; height:30px;
+  border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; flex-shrink:0;
+}
+.modal-close:hover{ background:#e2e8f0; }
+.modal-body{ padding:18px 22px 22px; overflow-y:auto; }

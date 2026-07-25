@@ -722,6 +722,8 @@ async function openConsulta(appointmentId){
     $("#cSoapA").value = enc.assessment || "";
     $("#cSoapP").value = enc.plan || "";
     setCie(enc.cie10_code, enc.cie10_desc);
+    soapDirty = false;
+    clearTimeout(soapAutosaveTimer);
     $("#cSoapMsg").textContent = "";
     $("#cVitalsMsg").textContent = "";
     $("#cFileMsg").textContent = "";
@@ -781,12 +783,16 @@ async function downloadFile(fileId){
   }catch{ alert("No se pudo abrir el archivo."); }
 }
 
-$("#cBack").addEventListener("click", ()=> setView("agenda"));
+$("#cBack").addEventListener("click", async ()=>{
+  await saveSoapNote({ silent: true });
+  setView("agenda");
+});
 
 $("#cFinish").addEventListener("click", async ()=>{
   if (!consultaAppt) return;
   if (!confirm("¿Finalizar la consulta?")) return;
   try{
+    await saveSoapNote({ silent: true });
     await api(`/appointments/${consultaAppt.id}/status`, { method:"POST", body: JSON.stringify({ status: "done" }) });
     await loadAll();
     setView("agenda");
@@ -796,6 +802,7 @@ $("#cFinish").addEventListener("click", async ()=>{
 $("#cCertForm")?.addEventListener("submit", async (e)=>{
   e.preventDefault();
   if (!consultaAppt) return;
+  await saveSoapNote({ silent: true });
   const msg = $("#certMsg");
   msg.textContent = "Emitiendo…";
   try{
@@ -816,18 +823,22 @@ $("#cCertForm")?.addEventListener("submit", async (e)=>{
   }catch{ msg.textContent = "No se pudo emitir (requiere rol médico/admin)."; }
 });
 
+// "Crear receta" abre un modal SIN salir de la consulta — así no se pierde
+// el avance de la nota SOAP, signos vitales ni archivos que ya llevabas.
 $("#cGoRx").addEventListener("click", async ()=>{
   if (!consultaAppt) return;
-  setView("recetas");
-  $("#rxPatient").value = consultaAppt.patient_id;
-  await syncRxAppointments(consultaAppt.id);
+  await saveSoapNote({ silent: true }); // respaldo por si acaso
+  openRxModal();
 });
 
-$("#cSoapForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  if (!consultaAppt) return;
+/* --- guardado de la nota SOAP: manual + autoguardado silencioso --- */
+let soapDirty = false;
+let soapAutosaveTimer = null;
+
+async function saveSoapNote({ silent = false } = {}){
+  if (!consultaAppt) return false;
   const msg = $("#cSoapMsg");
-  msg.textContent = "Guardando…";
+  if (!silent) msg.textContent = "Guardando…";
   try{
     await api(`/encounters/appointment/${consultaAppt.id}`, { method:"PUT", body: JSON.stringify({
       subjective: $("#cSoapS").value, objective: $("#cSoapO").value,
@@ -835,8 +846,28 @@ $("#cSoapForm").addEventListener("submit", async (e)=>{
       cie10_code: selectedCie?.code || null,
       cie10_desc: selectedCie?.desc || null,
     })});
-    msg.textContent = "Nota guardada ✅";
-  }catch{ msg.textContent = "No se pudo guardar."; }
+    soapDirty = false;
+    msg.textContent = silent ? "Guardado automático ✅" : "Nota guardada ✅";
+    return true;
+  }catch{
+    if (!silent) msg.textContent = "No se pudo guardar.";
+    return false;
+  }
+}
+
+$("#cSoapForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  await saveSoapNote({ silent: false });
+});
+
+// autoguardado: 2 segundos después de dejar de escribir, para que la nota
+// nunca se pierda aunque el médico olvide pulsar "Guardar nota"
+["#cSoapS","#cSoapO","#cSoapA","#cSoapP"].forEach(id => {
+  $(id)?.addEventListener("input", ()=>{
+    soapDirty = true;
+    clearTimeout(soapAutosaveTimer);
+    soapAutosaveTimer = setTimeout(()=>{ if (soapDirty) saveSoapNote({ silent: true }); }, 2000);
+  });
 });
 
 /* --- buscador de diagnóstico CIE-10 --- */
@@ -962,6 +993,90 @@ $("#rxTplSave")?.addEventListener("click", async ()=>{
     await loadTemplates();
     $("#rxMsg").textContent = "Plantilla guardada ✅";
   }catch{ $("#rxMsg").textContent = "No se pudo guardar la plantilla."; }
+});
+
+/* --- modal "Nueva receta" desde la Consulta (no navega de pantalla) --- */
+function openRxModal(){
+  if (!consultaAppt) return;
+  $("#mRxPatientLabel").textContent = `${consultaAppt.first_name} ${consultaAppt.last_name} — ${consultaAppt.reason || "consulta"}`;
+  $("#mRxItems").innerHTML = `<div class="rx-item">${rxItemHtml()}</div>`;
+  $("#mRxInstructions").value = "";
+  $("#mRxMsg").textContent = "";
+  const opt = (t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`;
+  $("#mRxTplSel").innerHTML = `<option value="">— Sin plantilla —</option>` + TPL.rx.map(opt).join("");
+  $("#rxModal").classList.remove("hidden");
+  $("#mRxItems .rxMed")?.focus();
+}
+function closeRxModal(){
+  $("#rxModal").classList.add("hidden");
+}
+$("#mRxClose")?.addEventListener("click", closeRxModal);
+$("#mRxCancel")?.addEventListener("click", closeRxModal);
+$("#rxModal")?.addEventListener("click", (e)=>{ if (e.target.id === "rxModal") closeRxModal(); });
+document.addEventListener("keydown", (e)=>{
+  if (e.key === "Escape" && !$("#rxModal").classList.contains("hidden")) closeRxModal();
+});
+
+$("#mRxAddItem")?.addEventListener("click", ()=>{
+  const div = document.createElement("div");
+  div.className = "rx-item";
+  div.innerHTML = rxItemHtml();
+  $("#mRxItems").appendChild(div);
+});
+
+$("#mRxTplApply")?.addEventListener("click", ()=>{
+  const t = TPL.rx.find(x => x.id === $("#mRxTplSel").value);
+  if (!t) return;
+  const c = t.content || {};
+  const items = Array.isArray(c.items) && c.items.length ? c.items : [{}];
+  $("#mRxItems").innerHTML = items.map(it => `<div class="rx-item">${rxItemHtml(it)}</div>`).join("");
+  if (c.instructions) $("#mRxInstructions").value = c.instructions;
+});
+
+$("#mRxTplSave")?.addEventListener("click", async ()=>{
+  const items = $$("#mRxItems .rx-item").map(el => ({
+    medication: el.querySelector(".rxMed").value.trim(),
+    dose: el.querySelector(".rxDose").value.trim() || null,
+    frequency: el.querySelector(".rxFreq").value.trim() || null,
+    duration: el.querySelector(".rxDur").value.trim() || null,
+  })).filter(i => i.medication);
+  if (!items.length){ $("#mRxMsg").textContent = "Agrega medicamentos antes de guardar la plantilla."; return; }
+  const name = prompt("Nombre de la plantilla (ej: Gripe adulto):");
+  if (!name) return;
+  try{
+    await api("/templates", { method:"POST", body: JSON.stringify({
+      type: "rx", name,
+      content: { items, instructions: $("#mRxInstructions").value.trim() || null },
+    })});
+    await loadTemplates();
+    $("#mRxMsg").textContent = "Plantilla guardada ✅";
+  }catch{ $("#mRxMsg").textContent = "No se pudo guardar la plantilla."; }
+});
+
+$("#mRxForm")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if (!consultaAppt) return;
+  const msg = $("#mRxMsg");
+  const items = $$("#mRxItems .rx-item").map(el => ({
+    medication: el.querySelector(".rxMed").value.trim(),
+    dose: el.querySelector(".rxDose").value.trim() || null,
+    frequency: el.querySelector(".rxFreq").value.trim() || null,
+    duration: el.querySelector(".rxDur").value.trim() || null,
+  })).filter(i => i.medication);
+  if (!items.length){ msg.textContent = "Agrega al menos un medicamento."; return; }
+  msg.textContent = "Emitiendo…";
+  try{
+    const pr = await api("/prescriptions", { method:"POST", body: JSON.stringify({
+      appointment_id: consultaAppt.id,
+      patient_id: consultaAppt.patient_id,
+      instructions: $("#mRxInstructions").value.trim() || null,
+      items,
+    })});
+    msg.textContent = "Receta emitida ✅";
+    closeRxModal();
+    loadPrescriptions().catch(()=>{});
+    await openPdf(pr.id);
+  }catch{ msg.textContent = "No se pudo emitir (requiere rol médico/admin)."; }
 });
 
 /* --- cobro de la consulta --- */
