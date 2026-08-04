@@ -10,10 +10,13 @@
   --dark:#111827;
   --radius:20px;
   --shadow:0 10px 30px rgba(15,23,42,.06);
+  --shadow-lift:0 18px 40px rgba(13,148,136,.14), 0 4px 10px rgba(15,23,42,.05);
+  --ease:cubic-bezier(.2,.8,.2,1);
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
+html{scroll-behavior:smooth}
 body{
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   color:var(--ink);
@@ -22,10 +25,82 @@ body{
     radial-gradient(900px 400px at -100px 100%, rgba(20,184,166,.10), transparent 60%),
     var(--bg);
   min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
 }
 .hidden{display:none !important}
 .muted{color:var(--muted);font-size:13px}
 .center{text-align:center}
+
+/* scrollbar fina y con acento teal, para toda la app */
+*{scrollbar-width:thin; scrollbar-color:#a7dcd4 transparent;}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:#bfe8e0;border-radius:99px}
+*::-webkit-scrollbar-thumb:hover{background:#8fd8cd}
+
+/* selección de texto con acento de marca */
+::selection{background:#99f6e4;color:#0B1F3B}
+
+/* foco visible accesible y elegante en toda la app */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--teal); outline-offset:2px; border-radius:6px;
+}
+
+/* ===== Barra de progreso superior (feedback global de carga) ===== */
+#topProgress{
+  position:fixed; top:0; left:0; height:3px; width:0%;
+  background:linear-gradient(90deg,#5eead4,#0d9488,#5eead4);
+  background-size:200% 100%;
+  z-index:999; opacity:0;
+  transition:width .3s var(--ease), opacity .35s ease;
+  box-shadow:0 0 10px rgba(13,148,136,.55);
+}
+#topProgress.on{opacity:1; animation:topShine 1.4s linear infinite}
+@keyframes topShine{to{background-position:-200% 0}}
+
+/* ===== Pantalla de carga inicial (login → dashboard) ===== */
+.boot-loader{
+  position:fixed; inset:0; z-index:500;
+  background:rgba(242,250,247,.94); backdrop-filter:blur(4px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  transition:opacity .35s ease;
+}
+.boot-loader.hidden{display:none}
+.boot-pulse{
+  width:60px;height:60px;border-radius:20px;
+  background:linear-gradient(135deg,#14b8a6,#0d9488);
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  animation:bootPulse 1.15s ease-in-out infinite;
+  box-shadow:0 16px 34px rgba(13,148,136,.32);
+}
+@keyframes bootPulse{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.1) rotate(4deg)}}
+.boot-text{font-size:13.5px;font-weight:800;color:var(--teal-dark);letter-spacing:.2px}
+.boot-dots{display:flex;gap:5px}
+.boot-dots span{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:bootDot 1.2s infinite ease-in-out}
+.boot-dots span:nth-child(2){animation-delay:.15s}
+.boot-dots span:nth-child(3){animation-delay:.3s}
+@keyframes bootDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-5px)}}
+
+/* ===== Skeleton loaders (placeholders animados mientras carga contenido) ===== */
+@keyframes skelShine{0%{background-position:-320px 0}100%{background-position:320px 0}}
+.skel{
+  background:linear-gradient(90deg,#e9f2f0 25%,#f6faf9 37%,#e9f2f0 63%);
+  background-size:400px 100%;
+  animation:skelShine 1.3s ease-in-out infinite;
+  border-radius:8px;
+}
+.skel-line{height:11px;margin:7px 0}
+.skel-line.w-30{width:30%}
+.skel-line.w-40{width:40%}
+.skel-line.w-60{width:60%}
+.skel-line.w-80{width:80%}
+.skel-circle{width:36px;height:36px;border-radius:50%;flex-shrink:0}
+.skel-card{height:80px;border-radius:16px;margin-bottom:10px}
+.skel-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border)}
+.skel-row:last-child{border-bottom:none}
+.skel-row-body{flex:1;display:flex;flex-direction:column;gap:6px}
 
 /* ===== Login ===== */
 .login-screen{
@@ -66,9 +141,10 @@ body{
   border:1px solid transparent;background:transparent;
   padding:9px 16px;border-radius:999px;
   font:inherit;font-weight:600;font-size:14px;color:var(--muted);
-  cursor:pointer;transition:.15s;
+  cursor:pointer;transition:background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease), transform .15s var(--ease);
 }
-.tab:hover{color:var(--ink)}
+.tab:hover{color:var(--ink);background:rgba(13,148,136,.06)}
+.tab:active{transform:scale(.96)}
 .tab.is-active{background:var(--card);color:var(--teal-dark);border-color:var(--border);box-shadow:var(--shadow)}
 
 /* ===== Buttons ===== */
@@ -76,18 +152,20 @@ body{
   border:none;border-radius:999px;
   padding:11px 20px;
   font:inherit;font-weight:700;font-size:14px;
-  cursor:pointer;transition:.15s;
+  cursor:pointer;transition:background .2s var(--ease), box-shadow .2s var(--ease), transform .12s var(--ease), opacity .15s ease;
 }
-.btn-primary{background:var(--teal);color:#fff}
-.btn-primary:hover{background:var(--teal-dark)}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:0 6px 16px rgba(13,148,136,.28)}
+.btn-primary:hover{background:var(--teal-dark);box-shadow:0 10px 22px rgba(13,148,136,.38);transform:translateY(-1px)}
 .btn-dark{background:var(--dark);color:#fff}
-.btn-dark:hover{opacity:.85}
+.btn-dark:hover{opacity:.85;transform:translateY(-1px)}
 .btn-outline{background:var(--card);color:var(--ink);border:1px solid var(--border)}
-.btn-outline:hover{border-color:var(--teal)}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal-dark);background:#f8fdfc}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none !important}
 .btn-block{width:100%}
 .btn-sm{padding:7px 13px;font-size:13px}
-.link{background:none;border:none;color:var(--teal-dark);font:inherit;font-weight:700;font-size:13px;cursor:pointer}
-.link:hover{text-decoration:underline}
+.link{background:none;border:none;color:var(--teal-dark);font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .15s}
+.link:hover{text-decoration:underline;opacity:.8}
 
 /* ===== Cards ===== */
 .card{
@@ -97,7 +175,9 @@ body{
   box-shadow:var(--shadow);
   padding:26px;
   margin-bottom:20px;
+  transition:box-shadow .25s var(--ease), border-color .25s var(--ease);
 }
+.card:hover{box-shadow:var(--shadow-lift);border-color:#d7ece6}
 .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
 .card-title{font-size:24px;font-weight:800;margin:0 0 2px;letter-spacing:-.5px}
 .card-sub{color:var(--muted);font-size:13px;margin:0 0 12px}
@@ -108,13 +188,17 @@ body{
   background:var(--card);border:1px solid var(--border);
   border-radius:var(--radius);box-shadow:var(--shadow);
   padding:22px;
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
 }
+.stat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lift);border-color:#d7ece6}
 .stat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .stat-icon{
   width:44px;height:44px;border-radius:14px;
   display:flex;align-items:center;justify-content:center;font-size:20px;
   background:var(--mint);
+  transition:transform .3s var(--ease);
 }
+.stat-card:hover .stat-icon{transform:scale(1.1) rotate(-6deg)}
 .icon-people{background:#e0e7ff}
 .icon-steth{background:#d9f7ef}
 .icon-cal{background:#e0f2fe}
@@ -160,6 +244,7 @@ body{
 }
 .tbl td{padding:12px;border-bottom:1px solid var(--border);vertical-align:top}
 .tbl tr:last-child td{border-bottom:none}
+.tbl tr{transition:background .15s ease}
 .tbl tr:hover td{background:#fafcfb}
 .row-actions{display:flex;gap:6px;flex-wrap:wrap}
 
@@ -168,9 +253,11 @@ body{
 .quick{
   display:flex;gap:12px;align-items:flex-start;text-align:left;
   background:var(--card);border:1px solid var(--border);border-radius:14px;
-  padding:14px;font:inherit;cursor:pointer;transition:.15s;
+  padding:14px;font:inherit;cursor:pointer;
+  transition:border-color .2s var(--ease), box-shadow .2s var(--ease), transform .2s var(--ease);
 }
-.quick:hover{border-color:var(--teal);box-shadow:var(--shadow)}
+.quick:hover{border-color:var(--teal);box-shadow:var(--shadow-lift);transform:translateY(-2px)}
+.quick:active{transform:translateY(0) scale(.98)}
 .quick b{display:block;font-size:14px}
 .quick span{color:var(--muted);font-size:12px}
 .quick-icon{
@@ -195,10 +282,13 @@ body{
   border:1px solid var(--border);border-radius:12px;
   padding:11px 14px;background:#fbfdfc;color:var(--ink);
   width:100%;
+  transition:border-color .18s var(--ease), background .18s var(--ease), box-shadow .18s var(--ease);
 }
 .form textarea{min-height:74px;resize:vertical}
+.form input:hover,.form select:hover,.form textarea:hover,.search:hover{border-color:#bfe0d9}
 .form input:focus,.form select:focus,.form textarea:focus,.search:focus{
   outline:none;border-color:var(--teal);background:#fff;
+  box-shadow:0 0 0 4px rgba(20,184,166,.12);
 }
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .search{margin-bottom:14px}
@@ -663,5 +753,21 @@ body{
   border:0; background:#f1f5f9; color:var(--muted); width:30px; height:30px;
   border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; flex-shrink:0;
 }
-.modal-close:hover{ background:#e2e8f0; }
+.modal-close:hover{ background:#e2e8f0; transform:rotate(90deg); }
+.modal-close{transition:background .2s ease, transform .25s var(--ease)}
+.modal-box{animation:modalIn .28s var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
 .modal-body{ padding:18px 22px 22px; overflow-y:auto; }
+
+/* ============================================================
+   Transición suave al cambiar de pestaña
+   ============================================================ */
+.view{animation:viewIn .35s var(--ease)}
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* pequeño "pop" en pills y badges para que se sientan vivos */
+.pill{transition:transform .15s var(--ease)}
+.stat-badge{transition:opacity .2s ease}
+
+/* mejor apariencia de los <details>/summary si se usan, y de scroll horizontal en tablas anchas */
+.card > div[id$="Table"]{overflow-x:auto}

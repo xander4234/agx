@@ -34,17 +34,71 @@ function pill(status){
   return `<span class="pill ${cls}">${label}</span>`;
 }
 
+/* barra de progreso superior: sube mientras haya peticiones en curso */
+let pendingRequests = 0;
+function progressStart(){
+  pendingRequests++;
+  const bar = $("#topProgress");
+  if (!bar) return;
+  bar.classList.add("on");
+  bar.style.width = "70%";
+}
+function progressEnd(){
+  pendingRequests = Math.max(0, pendingRequests - 1);
+  const bar = $("#topProgress");
+  if (!bar) return;
+  if (pendingRequests === 0){
+    bar.style.width = "100%";
+    setTimeout(()=>{
+      if (pendingRequests === 0){ bar.classList.remove("on"); bar.style.width = "0%"; }
+    }, 250);
+  }
+}
+
 async function api(path, options = {}){
   const headers = options.headers || {};
   if (token) headers.Authorization = `Bearer ${token}`;
   if (options.body) headers["Content-Type"] = "application/json";
-  const res = await fetch(`${API}${path}`, { ...options, headers });
-  if (!res.ok){
-    const text = await res.text().catch(()=> "");
-    throw new Error(text || `HTTP ${res.status}`);
+  progressStart();
+  try{
+    const res = await fetch(`${API}${path}`, { ...options, headers });
+    if (!res.ok){
+      const text = await res.text().catch(()=> "");
+      throw new Error(text || `HTTP ${res.status}`);
+    }
+    const ct = res.headers.get("content-type") || "";
+    return ct.includes("application/json") ? res.json() : res.text();
+  } finally {
+    progressEnd();
   }
-  const ct = res.headers.get("content-type") || "";
-  return ct.includes("application/json") ? res.json() : res.text();
+}
+
+/* ================= skeleton loaders (placeholders animados) ================= */
+function skelRows(n = 4, cols = 3){
+  const row = () => `<div class="skel-row">
+    <div class="skel skel-circle"></div>
+    <div class="skel-row-body">
+      <div class="skel skel-line w-60"></div>
+      <div class="skel skel-line w-40"></div>
+    </div>
+    ${cols > 2 ? `<div class="skel skel-line w-30" style="width:70px"></div>` : ""}
+  </div>`;
+  return Array.from({ length: n }, row).join("");
+}
+function skelCards(n = 3){
+  return `<div style="display:flex;flex-direction:column;gap:10px;">${
+    Array.from({ length: n }, () => `<div class="skel skel-card"></div>`).join("")
+  }</div>`;
+}
+
+function showBootLoader(text){
+  const el = $("#bootLoader");
+  if (!el) return;
+  if (text) $("#bootText").textContent = text;
+  el.classList.remove("hidden");
+}
+function hideBootLoader(){
+  $("#bootLoader")?.classList.add("hidden");
 }
 
 /* ================= navigation ================= */
@@ -53,8 +107,8 @@ function setView(name){
   $$(".view").forEach(v => v.classList.add("hidden"));
   const el = $("#view-" + name);
   if (el) el.classList.remove("hidden");
-  if (name === "caja") loadCaja().catch(()=>{});
-  if (name === "inventario") loadInventory().catch(()=>{});
+  if (name === "caja"){ $("#payTable") && ($("#payTable").innerHTML = skelRows(4)); loadCaja().catch(()=>{}); }
+  if (name === "inventario"){ $("#invTable") && ($("#invTable").innerHTML = skelRows(4)); loadInventory().catch(()=>{}); }
   if (name === "recordatorios") renderReminders();
 }
 $("#tabs").addEventListener("click", (e)=>{
@@ -100,7 +154,8 @@ $("#loginForm").addEventListener("submit", async (e)=>{
     msg.textContent = "";
     showApp();
     setView("dashboard");
-    await loadAll();
+    showBootLoader("Preparando tu consultorio…");
+    try{ await loadAll(); } finally { hideBootLoader(); }
   }catch{
     msg.textContent = "Credenciales incorrectas.";
   }
@@ -1205,6 +1260,7 @@ function renderPatients(list){
 let searchTimer = null;
 $("#patientSearch").addEventListener("input", (e)=>{
   clearTimeout(searchTimer);
+  $("#patientsTable").innerHTML = skelRows(4);
   searchTimer = setTimeout(async ()=>{
     const term = e.target.value.trim();
     try{
@@ -1260,6 +1316,8 @@ async function loadHistoria(patientId){
   hcPatientId = patientId;
   $("#hcContent").classList.remove("hidden");
   $("#soapCard").classList.add("hidden");
+  $("#hcInfo").innerHTML = skelRows(4, 2);
+  $("#hcAppointments").innerHTML = skelRows(2);
 
   const [p, appts, vitals, hcFiles] = await Promise.all([
     api(`/patients/${patientId}`),
@@ -1691,6 +1749,7 @@ async function loadInventory(){
 let invTimer = null;
 $("#invSearch")?.addEventListener("input", ()=>{
   clearTimeout(invTimer);
+  $("#invTable").innerHTML = skelRows(4);
   invTimer = setTimeout(()=> loadInventory().catch(()=>{}), 300);
 });
 
@@ -1963,6 +2022,7 @@ $("#auditRefresh")?.addEventListener("click", ()=> loadAudit());
 /* ================= boot ================= */
 (async function boot(){
   if (!token) return showLogin();
+  showBootLoader("Cargando tu sesión…");
   try{
     await api("/patients?limit=1");
     showApp();
@@ -1970,5 +2030,7 @@ $("#auditRefresh")?.addEventListener("click", ()=> loadAudit());
     await loadAll();
   }catch{
     showLogin();
+  } finally {
+    hideBootLoader();
   }
 })();

@@ -11,6 +11,16 @@
 </head>
 <body>
 
+  <!-- Barra de progreso superior: feedback visual de cualquier carga en curso -->
+  <div id="topProgress"></div>
+
+  <!-- Pantalla de carga inicial (login → dashboard listo) -->
+  <div id="bootLoader" class="boot-loader hidden">
+    <div class="boot-pulse">🩺</div>
+    <div class="boot-text" id="bootText">Preparando tu consultorio…</div>
+    <div class="boot-dots"><span></span><span></span><span></span></div>
+  </div>
+
   <!-- ============ LOGIN ============ -->
   <div id="loginScreen" class="login-screen">
     <div class="login-wrap">
